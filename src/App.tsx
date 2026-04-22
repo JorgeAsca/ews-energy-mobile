@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { IonApp, setupIonicReact, IonContent, IonButton, IonPage, IonSpinner } from '@ionic/react';
-import { SPFI, spfi } from "@pnp/sp";
+import { SPFI, spfi, SPBrowser } from "@pnp/sp";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
@@ -39,16 +39,14 @@ const App: React.FC = () => {
   // Función corregida para evitar el error de tipos en la línea 42
   const configurarPnP = (token: string) => {
     const spInstance = spfi("https://proyectosintegrales.sharepoint.com/sites/EWSStockManagement").using(
+      SPBrowser(), // <--- ESTO ES EL MOTOR QUE FALTABA
       (instance: Queryable) => {
-        // Quitamos los tipos manuales de los argumentos y usamos 'as any' para el retorno
-        // Esto elimina el error visual sin romper la funcionalidad
-        instance.on.pre(async (url, init) => {
+        instance.on.auth(async (url, init) => {
           init.headers = {
             ...init.headers,
             "Authorization": `Bearer ${token}`,
-            "Accept": "application/json;odata=nometadata"
+            "Accept": "application/json;odata=verbose" 
           };
-
           return [url, init] as any;
         });
       }

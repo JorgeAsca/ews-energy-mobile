@@ -8,8 +8,9 @@ let _sp: SPFI;
 
 export const getSP = (accessToken?: string): SPFI => {
   if (accessToken) {
-    // URL de tu sitio basada en tu Tenant ID y nombre de app
-    _sp = spfi("https://ewsenergy.sharepoint.com/sites/EwsEnergy")
+    // CAMBIAMOS LA URL A PROYECTOS INTEGRALES
+    // Asegúrate de que el nombre del sitio al final (/sites/...) sea el correcto
+    _sp = spfi("https://proyectosintegrales.sharepoint.com/sites/EwsEnergy") 
       .using((instance) => {
         instance.on.auth(async (url: string, init: RequestInit) => {
           init.headers = {

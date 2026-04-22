@@ -12,6 +12,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@azure/msal-browser": "^5.8.0",
     "@capacitor/app": "8.1.0",
     "@capacitor/core": "8.3.1",
     "@capacitor/haptics": "8.0.2",
