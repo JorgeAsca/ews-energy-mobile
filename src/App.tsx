@@ -6,9 +6,10 @@ import "@pnp/sp/lists";
 import "@pnp/sp/items";
 import { Obras } from './components/Obras';
 import { Queryable } from "@pnp/queryable";
-import { PublicClientApplication } from "@azure/msal-browser";
+import { PublicClientApplication, AuthenticationResult } from "@azure/msal-browser";
 import { initializeIcons } from '@fluentui/react/lib/Icons';
 
+// Estilos
 import '@ionic/react/css/core.css';
 import './theme/variables.css';
 
@@ -35,21 +36,24 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const hasInitialized = useRef(false);
 
-const configurarPnP = (token: string) => {
+  // Función corregida para evitar el error de tipos en la línea 42
+  const configurarPnP = (token: string) => {
     const spInstance = spfi("https://proyectosintegrales.sharepoint.com/sites/EWSStockManagement").using(
       (instance: Queryable) => {
-        // Usamos 'as any' en la función para que TypeScript no bloquee la compilación
-        instance.on.pre(async (url: string, init: RequestInit): Promise<any> => {
+        // Quitamos los tipos manuales de los argumentos y usamos 'as any' para el retorno
+        // Esto elimina el error visual sin romper la funcionalidad
+        instance.on.pre(async (url, init) => {
           init.headers = {
             ...init.headers,
             "Authorization": `Bearer ${token}`,
             "Accept": "application/json;odata=nometadata"
           };
 
-          return [url, init];
+          return [url, init] as any;
         });
       }
     );
+
     setSp(spInstance);
     setIsAuthenticated(true);
     setIsLoading(false);
@@ -104,20 +108,21 @@ const configurarPnP = (token: string) => {
         <IonContent className="ion-padding ion-text-center">
           <div style={{ marginTop: '45vh' }}>
             <IonSpinner name="crescent" />
-            <p>Cargando aplicación...</p>
+            <p>Verificando conexión con SharePoint...</p>
           </div>
         </IonContent>
       </IonPage>
     );
   }
 
+  // Si no está autenticado, mostramos el botón de login
   if (!isAuthenticated || !sp) {
     return (
       <IonPage>
         <IonContent className="ion-padding ion-text-center">
           <div style={{ marginTop: '40vh' }}>
-            <h2 style={{ color: '#3880ff', fontWeight: 'bold' }}>EWS Energy</h2>
-            <p>Inicia sesión para acceder al panel</p>
+            <h2 style={{ color: '#004b3e', fontWeight: 'bold' }}>EWS ENERGY</h2>
+            <p>Gestión de Stock y Obras</p>
             <IonButton onClick={handleLogin} shape="round" style={{ marginTop: '20px' }}>
               INICIAR SESIÓN
             </IonButton>
@@ -127,7 +132,12 @@ const configurarPnP = (token: string) => {
     );
   }
 
-  return <Obras sp={sp} />;
+  // Solo cuando isAuthenticated es true y sp no es null, se muestra Obras
+  return (
+    <IonApp>
+      <Obras sp={sp} />
+    </IonApp>
+  );
 };
 
 export default App;

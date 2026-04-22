@@ -1,6 +1,6 @@
 import * as React from 'react';
 import styles from './Obras.module.scss';
-import { IconButton, Text } from '@fluentui/react';
+import { IconButton, Text, Spinner, SpinnerSize } from '@fluentui/react';
 import { Sidebar } from './Navegacion/Sidebar';
 import { SPFI } from "@pnp/sp";
 
@@ -13,7 +13,6 @@ import { VistaFotosObra } from './Vistas/Fotos/VistaFotosObra';
 import { VistaPlanificacion } from './Vistas/Planificacion/VistaPlanificacion';
 import { VistaHistorialTarjetas } from './Vistas/historial/VistaHistorialReportes';
 
-// Definimos la interfaz localmente para evitar errores de importación de IObrasProps antigua
 interface IObrasMobileProps {
   sp: SPFI | null;
 }
@@ -22,23 +21,24 @@ export const Obras: React.FC<IObrasMobileProps> = (props) => {
   const [selectedKey, setSelectedKey] = React.useState<string>('obras');
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
-  // Verificamos que tengamos conexión antes de renderizar las vistas
-  if (!props.sp) {
-    return (
-      <div className={styles.loadingContainer}>
-        <Text variant="large">Conectando con EWS Energy...</Text>
-      </div>
-    );
-  }
-
-  const sp = props.sp;
-
+  // Función para renderizar la vista seleccionada
   const renderPage = () => {
+    // Si aún no hay SP, mostramos un spinner dentro del contenido para no bloquear la App
+    if (!props.sp) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '40px' }}>
+          <Spinner size={SpinnerSize.large} label="Conectando con SharePoint..." />
+        </div>
+      );
+    }
+
+    const sp = props.sp;
+
     switch (selectedKey) {
-      case 'inventario': return <ListaMateriales sp={sp} />;
-      case 'personal': return <GaleriaPersonal sp={sp} />;
       case 'obras': return <TablaObras sp={sp} />;
       case 'planificacion': return <VistaPlanificacion sp={sp} />;
+      case 'inventario': return <ListaMateriales sp={sp} />;
+      case 'personal': return <GaleriaPersonal sp={sp} />;
       case 'asignaciones': return <VistaAsignaciones sp={sp} />;
       case 'fotos': return <VistaFotosObra sp={sp} />;
       case 'historial': return <VistaHistorialTarjetas sp={sp} />;
@@ -54,7 +54,7 @@ export const Obras: React.FC<IObrasMobileProps> = (props) => {
           isOpen={isMenuOpen}
           onLinkClick={(key) => {
             setSelectedKey(key);
-            setIsMenuOpen(false); // Cierra el menú al navegar en móvil
+            setIsMenuOpen(false); 
           }} 
         />
         
@@ -69,7 +69,9 @@ export const Obras: React.FC<IObrasMobileProps> = (props) => {
               />
             </div>
             <div className={styles.headerRight}>
-              <Text variant="medium" style={{ fontWeight: 'bold' }}>EWS Energy Mobile</Text>
+              <Text variant="medium" style={{ fontWeight: 'bold', color: '#323130' }}>
+                EWS Energy Mobile
+              </Text>
             </div>
           </header>
           
@@ -78,8 +80,9 @@ export const Obras: React.FC<IObrasMobileProps> = (props) => {
           </div>
         </main>
 
-        {/* Capa para cerrar el menú en móvil al tocar fuera */}
-        {isMenuOpen && <div className={styles.overlay} onClick={() => setIsMenuOpen(false)} />}
+        {isMenuOpen && (
+          <div className={styles.overlay} onClick={() => setIsMenuOpen(false)} />
+        )}
       </div>
     </section>
   );
