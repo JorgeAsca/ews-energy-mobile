@@ -1,6 +1,6 @@
 import { StockService } from './StockService';
 import { ProjectService } from './ProjectService';
-import { getSP } from '../../../services/PnpConfig'; // Importamos la configuración móvil
+import { getSP } from './PnpConfig'; // Importamos la configuración móvil
 
 export class LogicService {
     private _stockService: StockService;

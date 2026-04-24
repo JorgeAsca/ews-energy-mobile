@@ -8,7 +8,7 @@ import { Obras } from './components/Obras';
 import { Queryable } from "@pnp/queryable";
 import { PublicClientApplication, AuthenticationResult } from "@azure/msal-browser";
 import { initializeIcons } from '@fluentui/react/lib/Icons';
-
+import { App as CapApp } from '@capacitor/app';
 // Estilos
 import '@ionic/react/css/core.css';
 import './theme/variables.css';
@@ -18,13 +18,14 @@ setupIonicReact();
 
 const msalConfig = {
   auth: {
-    clientId: "26cc7630-ed5a-4cde-9db8-a7ded2c00638", 
-    authority: "https://login.microsoftonline.com/6cf350dd-61d1-49c8-8197-f6b6b870f6b4", 
-    redirectUri: "http://localhost:8100", 
+    clientId: "26cc7630-ed5a-4cde-9db8-a7ded2c00638",
+    authority: "https://login.microsoftonline.com/6cf350dd-61d1-49c8-8197-f6b6b870f6b4",
+    // Esta línea detecta automáticamente si estás en la web o en el APK
+    redirectUri: "msauth://io.ionic.starter/XAjh9Gj1qyMt7E7q%2Fyhop%2Beq4cc%3D", 
   },
-  cache: { 
+  cache: {
     cacheLocation: "localStorage",
-    storeAuthStateInCookie: true 
+    storeAuthStateInCookie: true
   }
 };
 
@@ -57,37 +58,54 @@ const App: React.FC = () => {
     setIsLoading(false);
   };
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (hasInitialized.current) return;
-      hasInitialized.current = true;
+useEffect(() => {
+  const checkAuth = async () => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
 
-      try {
-        await msalInstance.initialize();
-        const result = await msalInstance.handleRedirectPromise();
-        
-        if (result) {
-          configurarPnP(result.accessToken);
-        } else {
-          const accounts = msalInstance.getAllAccounts();
-          if (accounts.length > 0) {
-            const silentRequest = {
-              scopes: ["https://proyectosintegrales.sharepoint.com/AllSites.Read"],
-              account: accounts[0]
-            };
-            const silentResponse = await msalInstance.acquireTokenSilent(silentRequest);
-            configurarPnP(silentResponse.accessToken);
-          } else {
-            setIsLoading(false);
+    try {
+      await msalInstance.initialize();
+
+      // 1. ESCUCHADOR PARA MÓVIL (Deep Links)
+      // Este evento se dispara cuando el navegador te devuelve a la APK
+      CapApp.addListener('appUrlOpen', async (data: any) => {
+        console.log(">>> Volviendo a la App desde URL:", data.url);
+        try {
+          // MSAL procesa la URL que trae el token
+          const result = await msalInstance.handleRedirectPromise(data.url);
+          if (result) {
+            configurarPnP(result.accessToken);
           }
+        } catch (err) {
+          console.error("Error al procesar el retorno del login:", err);
         }
-      } catch (error) {
-        console.error("Error inicializando sesión:", error);
-        setIsLoading(false);
+      });
+
+      // 2. PROCESO NORMAL (Para Web o si la App se reinicia)
+      const result = await msalInstance.handleRedirectPromise();
+      
+      if (result) {
+        configurarPnP(result.accessToken);
+      } else {
+        const accounts = msalInstance.getAllAccounts();
+        if (accounts.length > 0) {
+          const silentRequest = {
+            scopes: ["https://proyectosintegrales.sharepoint.com/AllSites.Read"],
+            account: accounts[0]
+          };
+          const silentResponse = await msalInstance.acquireTokenSilent(silentRequest);
+          configurarPnP(silentResponse.accessToken);
+        } else {
+          setIsLoading(false);
+        }
       }
-    };
-    checkAuth();
-  }, []);
+    } catch (error) {
+      console.error("Error inicializando sesión:", error);
+      setIsLoading(false);
+    }
+  };
+  checkAuth();
+}, []);
 
   const handleLogin = async () => {
     try {
