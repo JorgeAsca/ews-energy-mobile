@@ -18,10 +18,16 @@ setupIonicReact();
 
 const msalConfig = {
   auth: {
+<<<<<<< HEAD
     clientId: "26cc7630-ed5a-4cde-9db8-a7ded2c00638",
     authority: "https://login.microsoftonline.com/6cf350dd-61d1-49c8-8197-f6b6b870f6b4",
     // Esta línea detecta automáticamente si estás en la web o en el APK
     redirectUri: "msauth://io.ionic.starter/XAjh9Gj1qyMt7E7q%2Fyhop%2Beq4cc%3D", 
+=======
+    clientId: "26cc7630-ed5a-4cde-9db8-a7ded2c00638", 
+    authority: "https://login.microsoftonline.com/6cf350dd-61d1-49c8-8197-f6b6b870f6b4", 
+    redirectUri: window.location.origin, 
+>>>>>>> 54277ff646fd1bf9baecc87feba6cbbd0456963f
   },
   cache: {
     cacheLocation: "localStorage",
