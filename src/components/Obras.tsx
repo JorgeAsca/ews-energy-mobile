@@ -1,7 +1,6 @@
 import * as React from 'react';
 import styles from './Obras.module.scss';
-import { IconButton, Text, Spinner, SpinnerSize } from '@fluentui/react';
-import { Sidebar } from './Navegacion/Sidebar';
+import { Spinner, SpinnerSize } from '@fluentui/react';
 import { SPFI } from "@pnp/sp";
 
 // Vistas
@@ -15,26 +14,25 @@ import { VistaHistorialTarjetas } from './Vistas/historial/VistaHistorialReporte
 
 interface IObrasMobileProps {
   sp: SPFI | null;
+  activeView?: string; // Recibimos la vista activa desde App.tsx
 }
 
 export const Obras: React.FC<IObrasMobileProps> = (props) => {
-  const [selectedKey, setSelectedKey] = React.useState<string>('obras');
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-
-  // Función para renderizar la vista seleccionada
+  
   const renderPage = () => {
-    // Si aún no hay SP, mostramos un spinner dentro del contenido para no bloquear la App
     if (!props.sp) {
       return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '40px' }}>
-          <Spinner size={SpinnerSize.large} label="Conectando con SharePoint..." />
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          <Spinner size={SpinnerSize.large} label="Esperando conexión de SharePoint..." />
         </div>
       );
     }
 
     const sp = props.sp;
+    // Utilizamos la prop que viene de App.tsx (activeView)
+    const view = props.activeView || 'obras';
 
-    switch (selectedKey) {
+    switch (view) {
       case 'obras': return <TablaObras sp={sp} />;
       case 'planificacion': return <VistaPlanificacion sp={sp} />;
       case 'inventario': return <ListaMateriales sp={sp} />;
@@ -47,44 +45,12 @@ export const Obras: React.FC<IObrasMobileProps> = (props) => {
   };
 
   return (
-    <section className={styles.obras}>
-      <div className={styles.appWrapper}>
-        <Sidebar 
-          selectedKey={selectedKey} 
-          isOpen={isMenuOpen}
-          onLinkClick={(key) => {
-            setSelectedKey(key);
-            setIsMenuOpen(false); 
-          }} 
-        />
-        
-        <main className={styles.mainContent}>
-          <header className={styles.header}>
-            <div className={styles.headerLeft}>
-              <IconButton 
-                iconProps={{ iconName: 'GlobalNavButton' }} 
-                className={styles.menuButton}
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                title="Menú"
-              />
-            </div>
-            <div className={styles.headerRight}>
-              <Text variant="medium" style={{ fontWeight: 'bold', color: '#323130' }}>
-                EWS Energy Mobile
-              </Text>
-            </div>
-          </header>
-          
-          <div className={styles.pageBody}>
-            {renderPage()}
-          </div>
-        </main>
-
-        {isMenuOpen && (
-          <div className={styles.overlay} onClick={() => setIsMenuOpen(false)} />
-        )}
+    <div className={styles.obras}>
+      {/* Eliminado appWrapper, Sidebar y Header antiguos que causaban la raya negra */}
+      <div className={styles.pageBody}>
+        {renderPage()}
       </div>
-    </section>
+    </div>
   );
 };
 

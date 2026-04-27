@@ -25,31 +25,26 @@ interface ITablaObrasProps {
 export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
   const [obras, setObras] = React.useState<IObra[]>([]);
   const [loading, setLoading] = React.useState(true);
-  
-  // Usamos una referencia para evitar múltiples llamadas si el componente se re-renderiza
   const hasLoaded = React.useRef(false);
 
-  // Memorizamos el servicio para que sea eficiente
-  const projectService = React.useMemo(() => new ProjectService(props.sp), [props.sp]);
-
   const cargarObras = async () => {
+    console.log("!!! EJECUTANDO CARGAR OBRAS !!!"); // <-- LOG CRÍTICO
     try {
       setLoading(true);
-      console.log("Iniciando petición de obras a SharePoint...");
+      const projectService = new ProjectService(props.sp);
       const data = await projectService.getObras();
-      console.log("Datos cargados con éxito:", data);
+      console.log("Datos recibidos:", data);
       setObras(data);
     } catch (error) {
-      console.error("Error al cargar las obras en el componente:", error);
+      console.error("Error en el servicio:", error);
     } finally {
       setLoading(false);
     }
   };
 
   React.useEffect(() => {
-    // Solo disparamos la carga si el objeto SP existe y no hemos cargado ya
+    console.log("useEffect disparado. sp existe?:", !!props.sp); // <-- LOG CRÍTICO
     if (props.sp && !hasLoaded.current) {
-      console.log("Conexión SP detectada, cargando tabla...");
       hasLoaded.current = true;
       cargarObras();
     }

@@ -1,10 +1,33 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { IonApp, setupIonicReact, IonContent, IonButton, IonPage, IonSpinner, IonHeader, IonToolbar, IonTitle } from '@ionic/react';
+import { 
+  IonApp, 
+  setupIonicReact, 
+  IonContent, 
+  IonButton, 
+  IonPage, 
+  IonSpinner, 
+  IonHeader, 
+  IonToolbar, 
+  IonTitle,
+  IonButtons, 
+  IonMenuButton, 
+  IonSplitPane // <-- Importado
+} from '@ionic/react';
 import { SPFI, spfi, SPBrowser } from "@pnp/sp";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
+
+// --- IMPORTACIÓN DE TUS COMPONENTES ---
 import { Obras } from './components/Obras';
+import { Sidebar } from './components/Navegacion/Sidebar';
+import { ListaMateriales } from './components/Vistas/Inventario/ListaMateriales';
+import { GaleriaPersonal } from './components/Vistas/Personal/GaleriaPersonal';
+import { VistaPlanificacion } from './components/Vistas/Planificacion/VistaPlanificacion';
+import { VistaAsignaciones } from './components/Vistas/Asignaciones/VistaAsignaciones';
+import { VistaFotosObra } from './components/Vistas/Fotos/VistaFotosObra';
+import { VistaHistorialTarjetas } from './components/Vistas/historial/VistaHistorialReportes';
+
 import { Queryable } from "@pnp/queryable";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { initializeIcons } from '@fluentui/react/lib/Icons';
@@ -42,9 +65,9 @@ const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const hasInitialized = useRef(false);
+  const [activeView, setActiveView] = useState("obras");
 
   const configurarPnP = (token: string) => {
-    console.log(">>> Configurando conexión con SharePoint...");
     const spInstance = spfi("https://proyectosintegrales.sharepoint.com/sites/EWSStockManagement").using(
       SPBrowser(),
       (instance: Queryable) => {
@@ -72,7 +95,6 @@ const App: React.FC = () => {
       try {
         await msalInstance.initialize();
 
-        // Función auxiliar para login silencioso
         const intentarSilencioso = async () => {
           const accounts = msalInstance.getAllAccounts();
           if (accounts.length > 0) {
@@ -83,7 +105,6 @@ const App: React.FC = () => {
               });
               configurarPnP(silentResponse.accessToken);
             } catch (e) {
-              console.log(">>> Fallo token silencioso, requiere login manual.");
               setIsLoading(false);
             }
           } else {
@@ -92,11 +113,7 @@ const App: React.FC = () => {
         };
 
         if (Capacitor.isNativePlatform()) {
-          // --- LÓGICA EXCLUSIVA MÓVIL ---
-          
-          // 1. Escuchamos Deep Links cuando la app vuelve del navegador
           CapApp.addListener('appUrlOpen', async (data: any) => {
-            console.log(">>> Regresando a la App (Listener):", data.url);
             try {
               const urlHash = data.url.includes('#') ? `#${data.url.split('#')[1]}` : data.url;
               const result = await msalInstance.handleRedirectPromise({ hash: urlHash });
@@ -106,14 +123,12 @@ const App: React.FC = () => {
                 intentarSilencioso();
               }
             } catch (err) {
-              console.error(">>> Error procesando token:", err);
+              console.error(err);
             }
           });
 
-          // 2. Comprobamos si la app se arrancó desde cero por culpa del Deep Link
           const launchUrl = await CapApp.getLaunchUrl();
           if (launchUrl && launchUrl.url && launchUrl.url.includes('msauth')) {
-            console.log(">>> App arrancada por URL (Launch):", launchUrl.url);
             const urlHash = launchUrl.url.includes('#') ? `#${launchUrl.url.split('#')[1]}` : launchUrl.url;
             const result = await msalInstance.handleRedirectPromise({ hash: urlHash });
             if (result) {
@@ -122,12 +137,10 @@ const App: React.FC = () => {
               intentarSilencioso();
             }
           } else {
-            // Si la app se abrió normal (sin URL), intentamos recuperar sesión guardada
             intentarSilencioso();
           }
 
         } else {
-          // --- LÓGICA EXCLUSIVA WEB ---
           const result = await msalInstance.handleRedirectPromise();
           if (result) {
             configurarPnP(result.accessToken);
@@ -136,7 +149,6 @@ const App: React.FC = () => {
           }
         }
       } catch (error) {
-        console.error(">>> Error inicializando sesión:", error);
         setIsLoading(false);
       }
     };
@@ -186,19 +198,43 @@ const App: React.FC = () => {
     );
   }
 
+
   return (
     <IonApp>
-      <IonPage> {/* <-- Agregamos IonPage para gestionar el layout */}
-        <IonHeader translucent={true}>
-          <IonToolbar color="primary">
-            <IonTitle>EWS ENERGY</IonTitle>
-          </IonToolbar>
-        </IonHeader>
+      {/* Añadimos 'disabled={false}' para asegurar que el SplitPane esté activo */}
+      <IonSplitPane contentId="main-content" when="lg">
         
-        <IonContent>
-          <Obras sp={sp} />
-        </IonContent>
-      </IonPage>
+        <Sidebar 
+          contentId="main-content" 
+          selectedKey={activeView} 
+          onLinkClick={(key) => setActiveView(key)} 
+        />
+
+        {/* El IonPage debe tener un fondo blanco/claro para cubrir cualquier residuo */}
+        <IonPage id="main-content" style={{ background: '#f9fbf9' }}> 
+          <IonHeader className="ion-no-border">
+            <IonToolbar style={{ '--background': '#004b3e', '--color': '#ffffff' }}>
+              <IonButtons slot="start">
+                <IonMenuButton style={{ color: '#ffffff' }} />
+              </IonButtons>
+              <IonTitle style={{ fontWeight: 'bold' }}>EWS ENERGY</IonTitle>
+            </IonToolbar>
+          </IonHeader>
+          
+          <IonContent style={{ '--background': '#f9fbf9' }}>
+            <div style={{ width: '100%', height: '100%' }}>
+              {activeView === "obras" && <Obras sp={sp} activeView={activeView} />}
+              {activeView === "inventario" && <ListaMateriales sp={sp} />}
+              {activeView === "personal" && <GaleriaPersonal sp={sp} />}
+              {activeView === "planificacion" && <VistaPlanificacion sp={sp} />}
+              {activeView === "asignaciones" && <VistaAsignaciones sp={sp} />}
+              {activeView === "fotos" && <VistaFotosObra sp={sp} />}
+              {activeView === "historial" && <VistaHistorialTarjetas sp={sp} />}
+            </div>
+          </IonContent>
+        </IonPage>
+
+      </IonSplitPane>
     </IonApp>
   );
 };
