@@ -40,54 +40,40 @@ const menuItems = [
 export const Sidebar: React.FC<ISidebarProps> = (props) => {
   return (
     <IonMenu 
-      contentId={props.contentId}
-      style={{ 
-        '--width': '180px', 
-        '--min-width': '180px',
-        '--max-width': '180px',
-        '--border': 'none',
-        '--box-shadow': 'none'
-      }} 
+      contentId={props.contentId} 
+      type="overlay" 
+      style={{ '--width': '250px' }} 
     >
       <IonHeader className="ion-no-border">
-        <IonToolbar style={{ '--background': '#004b3e', '--color': '#ffffff', '--min-height': '44px' }}>
-          <IonTitle style={{ fontWeight: 'bold', fontSize: '13px' }}>MENÚ</IonTitle>
+        <IonToolbar style={{ '--background': '#004b3e', '--color': '#ffffff' }}>
+          <IonTitle style={{ fontWeight: 'bold', fontSize: '16px' }}>MENÚ</IonTitle>
         </IonToolbar>
       </IonHeader>
       
-      <IonContent style={{ '--background': '#ffffff' }}>
-        <IonList lines="none" style={{ paddingTop: '8px' }}>
+      <IonContent>
+        <IonList lines="none" className="ion-padding-top">
           {menuItems.map((item) => (
             <IonMenuToggle key={item.key} autoHide={false}>
               <IonItem
                 button
                 detail={false}
                 onClick={() => props.onLinkClick(item.key)}
+                color={props.selectedKey === item.key ? "light" : ""}
                 style={{
-                  '--background': props.selectedKey === item.key ? '#e8f5e9' : 'transparent',
-                  '--border-radius': '0 16px 16px 0',
-                  '--padding-start': '10px',
-                  '--padding-end': '6px',
-                  '--min-height': '40px',
-                  '--border-color': 'transparent',
-                  marginBottom: '2px',
-                  marginRight: '8px',
+                  '--border-radius': '0 20px 20px 0',
+                  '--margin-end': '10px',
+                  marginBottom: '4px'
                 }}
               >
                 <IonIcon 
                   slot="start" 
                   icon={item.icon} 
-                  style={{ 
-                    fontSize: '16px',
-                    marginRight: '8px',
-                    color: props.selectedKey === item.key ? '#004b3e' : '#888'
-                  }} 
+                  color={props.selectedKey === item.key ? "primary" : "medium"} 
                 />
                 <IonLabel 
                   style={{ 
-                    fontWeight: props.selectedKey === item.key ? '600' : 'normal',
-                    fontSize: '12px',
-                    color: props.selectedKey === item.key ? '#004b3e' : '#444'
+                    fontWeight: props.selectedKey === item.key ? 'bold' : 'normal',
+                    fontSize: '14px' 
                   }}
                 >
                   {item.name}
