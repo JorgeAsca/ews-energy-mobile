@@ -1,125 +1,137 @@
-// @import '~@fluentui/react/dist/sass/References.scss';
+/* ListaMateriales.module.scss */
 
-$verde-ews: #004d40;
-$verde-claro: #8bc34a;
-$blanco: #ffffff;
-$gris-borde: #edebe9;
-$rojo-alerta: #d13438;
-
-
-.container {
-  padding: 20px;
-  background-color: #f4f4f4;
-  min-height: 100vh;
-
-  :global {
-    
-    .ms-TextField-fieldGroup::after,
-    .ms-Dropdown-container::after,
-    .ms-SearchBox::after {
-      border-color: $verde-ews;
-    }
-    
-    
-    .ms-DetailsHeader {
-      background-color: $verde-ews;
-      padding-top: 0;
-
-      .ms-DetailsHeader-cell {
-        color: $blanco;
-        background-color: $verde-ews;
-        font-weight: 700;
-
-        .ms-DetailsHeader-filterChevron, 
-        .ms-DetailsHeader-cellName {
-          color: $blanco;
-        }
-      }
-    }
-
-    .ms-DetailsRow {
-      border-bottom: 1px solid $gris-borde;
-      
-      
-      &:hover {
-        background-color: rgba($verde-claro, 0.1);
-        color: $verde-ews;
-        
-        .ms-DetailsRow-cell {
-          background-color: transparent;
-          color: $verde-ews;
-        }
-      }
-    }
-  }
-}
-
-.formCard {
-  background-color: $blanco;
+.listaMateriales {
   padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-bottom: 25px;
-  border-top: 4px solid $verde-ews;
-}
+  background-color: #f3f2f1; /* Un gris un poco más oscuro para que las tarjetas blancas destaquen */
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 
-.formTitle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  color: $verde-ews;
-  i { font-size: 24px; }
-}
+  .title {
+    color: #201f1e;
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    display: block;
+    letter-spacing: -0.5px;
+  }
 
-.gridForm {
-  display: grid;
-  grid-template-columns: 2fr 1fr 0.8fr 0.8fr 1fr;
-  gap: 15px;
-  align-items: end;
+  .headerStack {
+    background-color: #ffffff;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 0 2px rgba(0, 0, 0, 0.06);
+    border: none;
+    margin-bottom: 24px;
+  }
 
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr 1fr;
+  .addForm {
+    background-color: #ffffff;
+    padding: 20px 24px;
+    border-radius: 8px;
+    border: 1px solid #e1dfdd;
+    border-left: 4px solid #0078d4; /* Acento de color azul Fluent UI */
+    margin-top: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Contenedor de los campos */
+    :global(.ms-Stack) {
+      /* CORRECCIÓN: Alineación central para que todos los elementos (etiquetas, inputs, botones, imagen) se alineen en el mismo eje horizontal */
+      align-items: center; /* Cambiado de flex-end a center */
+      gap: 16px;
+    }
   }
 }
 
-.btnAdd {
-  height: 32px;
-  background-color: $verde-ews;
-  border: none;
-  border-radius: 4px;
-  color: $blanco;
-  &:hover {
-    background-color: $verde-claro;
+/* Ajustes para la tabla (DetailsList) */
+:global {
+  .ms-DetailsList {
+    background-color: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 0 2px rgba(0, 0, 0, 0.06);
+    border: none;
+  }
+
+  /* Ajuste para que las filas respiren y tengan efecto hover */
+  .ms-DetailsRow {
+    border-bottom: 1px solid #f3f2f1;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #f8f9fa; /* Efecto hover elegante al pasar el ratón */
+    }
+  }
+
+  /* Estilo limpio para las cabeceras de la tabla */
+  .ms-DetailsHeader {
+    background-color: #ffffff;
+    border-bottom: 2px solid #edebe9;
+    padding-top: 8px;
+    padding-bottom: 8px;
+
+    .ms-DetailsHeader-cell {
+      font-weight: 600;
+      color: #605e5c;
+      font-size: 14px;
+    }
   }
 }
 
-.searchSection {
-  margin: 15px 0;
-  width: 350px; 
+/* Estilos específicos para las imágenes de los productos */
+.productImageThumbnail {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e1dfdd;
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.tableContainer {
-  background-color: $blanco;
+.imagePreviewBig {
+  width: 100%;
+  max-height: 250px;
+  object-fit: contain;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  border: 1px solid $gris-borde;
+  background-color: #f8f9fa;
+  border: 1px solid #e1dfdd;
 }
 
-.stockCellAlerta {
-  color: $rojo-alerta;
-  font-weight: 700;
-}
+/* Responsividad para móviles */
+@media (max-width: 600px) {
+  .listaMateriales {
+    padding: 12px;
 
-.stockCellNormal {
-  color: $verde-ews;
-  font-weight: 700;
-}
+    .headerStack {
+      padding: 16px;
+    }
 
-.actionBtn { color: $verde-ews; }
-.deleteBtn { color: $rojo-alerta; }
+    .addForm {
+      :global(.ms-Stack) {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px;
+      }
 
-.panelStack {
-  margin-top: 20px;
+      /* Los campos de texto y botones ocupan todo el ancho en móvil */
+      :global(.ms-TextField), 
+      :global(.ms-Button) {
+        width: 100% !important;
+        margin-bottom: 8px;
+      }
+    }
+  }
+
+  /* Hacemos que la tabla permita scroll horizontal si hay muchas columnas */
+  :global(.ms-DetailsList-contentWrapper) {
+    overflow-x: auto;
+  }
 }

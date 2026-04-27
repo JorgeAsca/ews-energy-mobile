@@ -23,6 +23,18 @@ export class AsignacionesService {
     }
   }
 
+  // CORRECCIÓN: Renombramos la función para que coincida con VistaPlanificacion.tsx
+  public async asignarPersonal(datos: any): Promise<void> {
+    try {
+      await this._sp.web.lists.getByTitle(this._listName).items.add(datos);
+    } catch (error) {
+      // Si SharePoint rechaza los datos (ej: las columnas no se llaman así), esto nos dará la pista
+      console.error("Error detallado al guardar en SharePoint:", error);
+      throw error; 
+    }
+  }
+
+  // Mantenemos crearAsignacion por si la usabas en otro lado de tu app
   public async crearAsignacion(datos: any): Promise<void> {
     await this._sp.web.lists.getByTitle(this._listName).items.add(datos);
   }
@@ -39,13 +51,10 @@ export class AsignacionesService {
   }
 
   public getCuadrillaSugerida(obraId: number, operarioId: number, asignaciones: any[], personal: IPersonal[]): IPersonal[] {
-    // Extraemos los IDs y aseguramos que TypeScript los vea como un array de números
     const idsEnObra: number[] = asignaciones
         .filter(asig => Number(asig.ObraId) === Number(obraId) && Number(asig.PersonalId) !== Number(operarioId))
         .map(asig => Number(asig.PersonalId));
 
-    // Usamos 'some' en lugar de 'includes' si el error persiste, 
-    // o simplemente aseguramos el casteo del ID de la persona
     return personal.filter(p => idsEnObra.some(id => id === Number(p.Id)));
   }
 }
