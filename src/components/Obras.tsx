@@ -21,18 +21,26 @@ export const Obras: React.FC<IObrasMobileProps> = (props) => {
   const [selectedKey, setSelectedKey] = React.useState<string>('obras');
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
-  // Función para renderizar la vista seleccionada
+  // LOG DE DIAGNÓSTICO: Verificamos si el componente llega a montarse
+  React.useEffect(() => {
+    console.log(">>> COMPONENTE OBRAS MONTADO CORRECTAMENTE <<<");
+    console.log(">>> ESTADO DEL OBJETO SP:", props.sp);
+  }, [props.sp]);
+
   const renderPage = () => {
-    // Si aún no hay SP, mostramos un spinner dentro del contenido para no bloquear la App
+    // Si el objeto SP no ha llegado, el problema está en App.tsx
     if (!props.sp) {
+      console.warn(">>> ADVERTENCIA: props.sp es NULL en Obras.tsx <<<");
       return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '40px' }}>
-          <Spinner size={SpinnerSize.large} label="Conectando con SharePoint..." />
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          <Spinner size={SpinnerSize.large} label="Esperando conexión de SharePoint..." />
+          <Text variant="small">Si esto no desaparece, el login falló silenciosamente.</Text>
         </div>
       );
     }
 
     const sp = props.sp;
+    console.log(">>> RENDERIZANDO VISTA:", selectedKey);
 
     switch (selectedKey) {
       case 'obras': return <TablaObras sp={sp} />;
@@ -64,12 +72,14 @@ export const Obras: React.FC<IObrasMobileProps> = (props) => {
               <IconButton 
                 iconProps={{ iconName: 'GlobalNavButton' }} 
                 className={styles.menuButton}
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                title="Menú"
+                onClick={() => {
+                  console.log("Click en Menú Hamburguesa");
+                  setIsMenuOpen(!isMenuOpen);
+                }}
               />
             </div>
             <div className={styles.headerRight}>
-              <Text variant="medium" style={{ fontWeight: 'bold', color: '#323130' }}>
+              <Text variant="medium" style={{ fontWeight: 'bold', color: '#004b3e' }}>
                 EWS Energy Mobile
               </Text>
             </div>
