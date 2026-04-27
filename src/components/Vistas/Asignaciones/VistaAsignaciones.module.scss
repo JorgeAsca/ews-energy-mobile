@@ -1,21 +1,20 @@
-// @import '~@fluentui/react/dist/sass/References.scss';
-
-$verde-oscuro: #004d40;
-$verde-claro: #8bc34a;
-$verde-fondo: #f9fbf9;
+$verde-oscuro: #004b3e;
+$verde-claro: #1a5d51;
+$verde-fondo: #f4f5f8;
 $blanco: #ffffff;
 
 .container {
-  padding: 30px;
+  padding: 20px;
   background-color: $verde-fondo;
   min-height: 100vh;
+  box-sizing: border-box;
 }
 
 .headerArea {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 
   .headerTitle {
     font-size: 24px;
@@ -29,34 +28,10 @@ $blanco: #ffffff;
   justify-content: center;
   align-items: center;
   height: 200px;
-} 
-
-.header{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-
-  .headerTitle {
-    font-size: 24px;
-    font-weight: 700;
-    color: $verde-oscuro;
-  }
 }
 
 .fieldWrapper {
   margin-bottom: 20px;
-}
-
-.personaName {
-  font-weight: 600;
-  color: $verde-oscuro;
-}
-
-.semaforoText {
-  font-size: 12px;
-  font-weight: 600;
-  color: #333;
 }
 
 .emptyText {
@@ -64,100 +39,135 @@ $blanco: #ffffff;
   color: #777;
   font-size: 14px;
   margin-top: 40px;
+  display: block;
 }
 
-
+/* --- FORMULARIO SUPERIOR --- */
 .formContainer {
   background-color: $blanco;
-  padding: 30px;
-  border-radius: 16px;
-  margin-bottom: 40px;
-  box-shadow: 0 4px 12px rgba(0, 77, 64, 0.05);
-  border: 1px solid #e8eee8;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 
   :global(.ms-Label) {
     color: $verde-oscuro !important;
     font-weight: 600;
   }
 
-
   :global(.ms-Dropdown-title), 
   :global(.ms-TextField-fieldGroup),
   :global(.ms-DatePicker-container) {
-    background-color: $blanco !important;
-    border-color: #d1d1d1 !important;
+    background-color: #fdfdfd !important;
+    border-color: #e0e0e0 !important;
     color: #333 !important;
-    border-radius: 4px;
+    border-radius: 8px;
   }
 }
 
-
 .dropdownLarge { 
-  width: 280px; 
+  width: 100%;
+  max-width: 300px; 
 }
 
 .datePicker { 
-  width: 200px; 
+  width: 100%;
+  max-width: 200px; 
 }
 
 .btnAsignar {
   background-color: $verde-oscuro;
   border: none;
   border-radius: 8px;
-  height: 32px;
+  height: 40px;
+  padding: 0 20px;
+  transition: all 0.2s ease;
+
   &:hover { 
     background-color: $verde-claro; 
   }
 }
 
-
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
 }
 
-.obraCard {
+.obraCardGroup {
   background: $blanco;
-  border-radius: 16px;
-  border: 1px solid #edebe9;
-  padding: 25px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-  
-  .obraTitle {
-    font-weight: 700;
-    color: $verde-oscuro;
-    font-size: 18px;
+  border-radius: 14px;
+  border: 1px solid #e1e1e1;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.06);
   }
 }
 
-.assignmentItem {
-  padding: 12px;
-  border-radius: 8px;
-  background-color: #f8faf8;
-  border-left: 4px solid transparent;
-  margin-bottom: 8px;
-
-  &.retrasado { border-left-color: #d13438; }
-  &.critico { border-left-color: #ffaa44; }
-  &.atiempo { border-left-color: $verde-claro; }
+.cardHeader {
+  background-color: #f8fcfb;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.statusBadge {
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
+.headerIcon {
+  color: $verde-oscuro;
+  font-size: 18px;
 }
 
-.bgFinalizado { background: #e8f5e9; color: $verde-claro; }
-.bgActivo { background: #e3f2fd; color: #0078d4; }
+.obraTitleAgrupada {
+  font-weight: 700;
+  color: $verde-oscuro;
+  font-size: 16px;
+}
 
-.deleteBtn {
+.personalContainer {
+  padding: 10px 15px;
+}
+
+.personaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f9f9f9;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.deleteMiniBtn {
   color: #a19f9d;
+  height: 32px;
+  width: 32px;
+  
   &:hover { 
     color: #d13438; 
-    background-color: #fff1f1; 
+    background-color: #fde7e9; 
+    border-radius: 50%;
+  }
+}
+
+/* --- RESPONSIVIDAD PARA MÓVILES --- */
+@media (max-width: 600px) {
+  .dropdownLarge, .datePicker {
+    max-width: 100%;
+  }
+  
+  .formContainer {
+    padding: 16px;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
   }
 }
