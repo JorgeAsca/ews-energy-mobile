@@ -1,166 +1,137 @@
-// @import '~@fluentui/react/dist/sass/References.scss';
-
-
 $verde-oscuro: #004d40;
 $verde-claro: #8bc34a;
-$fondo-suave: #f9fbf9;
+$fondo-app: #f9fbf9;
 $blanco: #ffffff;
+$shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 
 .container {
-    padding: 30px;
-    background-color: $fondo-suave;
-    min-height: 100vh;
-    position: relative; 
+  padding: 30px;
+  background-color: $fondo-app;
+  min-height: 100vh;
 }
 
 .headerSection {
-    margin-bottom: 40px;
-    border-bottom: 2px solid rgba(0, 77, 64, 0.1);
-    padding-bottom: 20px;
+  margin-bottom: 35px;
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
 }
 
 .tituloPrincipal {
-    color: $verde-oscuro;
-    font-weight: 700;
-    letter-spacing: -0.5px;
+  color: $verde-oscuro;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
-.subtitulo {
-    color: #605e5c;
-    font-style: italic;
+.countBadge {
+  background: rgba(0, 77, 64, 0.1);
+  color: $verde-oscuro;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .btnNuevo {
-    border-radius: 8px;
-    background-color: $verde-oscuro;
-    border: none;
-    &:hover { background-color: $verde-claro; }
+  background-color: $verde-oscuro;
+  border-radius: 8px;
+  height: 42px;
+  border: none;
+  &:hover { background-color: $verde-claro; }
 }
 
-/* Grid y Tarjetas */
+/* GRID RESPONSIVO */
 .gridPersonal {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 30px;
+  display: grid;
+  // En móviles una columna, en tablets/desktop se ajusta solo
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
 }
 
 .cardEmpleado, .cardEmpleadoShimmer {
-    position: relative;
-    background: $blanco;
-    border-radius: 16px;
-    border: 1px solid #edebe9;
-    padding: 25px;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
-    overflow: visible;
+  background: $blanco;
+  border-radius: 16px;
+  padding: 30px 20px;
+  text-align: center;
+  position: relative;
+  box-shadow: $shadow;
+  border: 1px solid #edebe9;
+  transition: all 0.3s ease;
 
-    &:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 12px 24px rgba(0, 77, 64, 0.12);
-        border-color: $verde-claro;
-    }
-
-    &:hover .editOverlay { opacity: 1; }
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border-color: $verde-claro;
+  }
 }
 
-.editOverlay {
-    position: absolute;
-    top: -10px;
-    right: -10px;
-    opacity: 0; 
-    transition: opacity 0.2s ease;
-    z-index: 5; 
+.editIcon {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: #a19f9d;
+  &:hover { color: $verde-oscuro; }
 }
 
-.editButton {
-    background-color: $blanco;
-    border-radius: 50%;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    color: $verde-oscuro;
-    &:hover { background-color: $verde-oscuro; color: $blanco; }
+.personaStyled {
+  margin-bottom: 10px;
+  // Ajuste de color del círculo por defecto de Fluent
+  :global(.ms-Persona-initials) {
+    background-color: $verde-oscuro !important;
+  }
 }
 
-.avatarArea {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
+.empName {
+  font-size: 18px;
+  font-weight: 700;
+  color: $verde-oscuro;
 }
 
-.nombre {
-    font-size: 18px;
-    font-weight: 700;
-    color: $verde-oscuro;
+.empRole {
+  font-size: 14px;
+  color: #605e5c;
+  font-weight: 500;
+  background: #f3f2f1;
+  padding: 2px 10px;
+  border-radius: 4px;
 }
 
-.cargo {
-    font-size: 11px;
-    color: $verde-claro;
-    font-weight: 700;
-    text-transform: uppercase;
+.cardSeparator {
+  width: 100%;
+  margin: 15px 0;
 }
 
-.iconCargo { color: $verde-claro; font-size: 14px; }
-.cardSeparator { margin: 15px 0; }
-.idEmpleado { font-size: 11px; color: #a19f9d; font-weight: 600; }
-.iconContact { color: #edebe9; font-size: 16px; }
+.iconContact {
+  color: $verde-claro;
+}
 
-/* --- ESTILOS MODAL FLOTANTE --- */
+.btnContactar {
+  width: 100%;
+  margin-top: 15px;
+  border-radius: 8px;
+  border-color: $verde-oscuro;
+  color: $verde-oscuro;
+  font-weight: 600;
+
+  &:hover {
+    background-color: $verde-oscuro;
+    color: white;
+  }
+}
+
+/* MODAL FLOTANTE */
 .modalFlotante {
-    :global(.ms-Modal-main) {
-        background-color: $blanco;
-        border-radius: 16px;
-        border: 2px solid $verde-oscuro;
-        box-shadow: 0 10px 40px rgba(0, 77, 64, 0.2);
-        max-width: 550px;
-        width: 100%;
-        animation: fadeInDown 0.3s ease-out;
-    }
-}
-
-.modalContent { padding: 30px; }
-
-.modalHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modalTitle { color: $verde-oscuro; font-weight: 700; }
-.modalSeparator { margin: 10px 0 20px 0; }
-
-.modalBody {
-    :global(.ms-Label) { color: $verde-oscuro; font-weight: 600; }
-}
-
-.previewBox {
-    padding: 20px;
-    background: #f8faf8;
+  :global(.ms-Modal-main) {
     border-radius: 12px;
-    border: 2px dashed $verde-claro;
-    margin-top: 10px;
-}
-.previewTitle { font-weight: 600; color: $verde-oscuro; }
-
-.modalFooter { margin-top: 30px; }
-
-.btnPanelPrimary { background-color: $verde-oscuro; border: none; }
-.btnDelete {
-    color: #a4262c;
-    border-color: #a4262c;
-    &:hover { background-color: #fff1f1; color: #a4262c; border-color: #a4262c; }
+    max-width: 500px;
+    width: 90%;
+  }
 }
 
-.btnConfirmDelete {
-    background-color: #a4262c;
-    border-color: #a4262c;
-}
-
-/* Helpers Shimmer */
-.shimmerSeparator { margin: 15px 0; width: 100%; }
-.fullWidth { width: 100%; }
-
-@keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+.modalContent { padding: 25px; }
+.modalHeader { display: flex; justify-content: space-between; align-items: center; }
+.modalTitle { color: $verde-oscuro; font-weight: 700; }
+.modalSeparator { margin: 15px 0; }
+.modalFooter { margin-top: 25px; gap: 10px; }

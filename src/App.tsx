@@ -11,7 +11,7 @@ import {
   IonTitle,
   IonButtons, 
   IonMenuButton, 
-  IonSplitPane // <-- Importado
+  IonSplitPane 
 } from '@ionic/react';
 import { SPFI, spfi, SPBrowser } from "@pnp/sp";
 import "@pnp/sp/webs";
@@ -157,6 +157,7 @@ const App: React.FC = () => {
 
   const handleLogin = async () => {
     try {
+      // Para web o cuando se configure el In-App Browser
       await msalInstance.loginRedirect({
         scopes: ["https://proyectosintegrales.sharepoint.com/AllSites.Read"],
         prompt: "select_account"
@@ -170,38 +171,77 @@ const App: React.FC = () => {
     }
   };
 
+  // -----------------------------------------------------
+  // 1. PANTALLA DE CARGA (SPLASH SCREEN MEJORADO)
+  // -----------------------------------------------------
   if (isLoading) {
     return (
       <IonPage>
-        <IonContent className="ion-padding ion-text-center">
-          <div style={{ marginTop: '45vh' }}>
-            <IonSpinner name="crescent" />
-            <p>Iniciando sistema...</p>
+        <IonContent style={{ '--background': '#f9fbf9' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
+            {/* Asegúrate de tener tu logo aquí */}
+            <img src="/assets/logo.png" alt="EWS Energy" style={{ width: '180px', marginBottom: '30px' }} />
+            <IonSpinner name="dots" style={{ color: '#004b3e', transform: 'scale(1.5)' }} />
+            <p style={{ color: '#004b3e', fontWeight: '600', marginTop: '20px', letterSpacing: '1px' }}>Sincronizando sistema...</p>
           </div>
         </IonContent>
       </IonPage>
     );
   }
 
+  // -----------------------------------------------------
+  // 2. PANTALLA DE LOGIN (TARJETA CORPORATIVA)
+  // -----------------------------------------------------
   if (!isAuthenticated || !sp) {
     return (
       <IonPage>
-        <IonContent className="ion-padding ion-text-center">
-          <div style={{ marginTop: '40vh' }}>
-            <h2 style={{ color: '#004b3e', fontWeight: 'bold' }}>EWS ENERGY</h2>
-            <IonButton onClick={handleLogin} shape="round" style={{ marginTop: '20px' }}>
-              INICIAR SESIÓN
-            </IonButton>
+        {/* Fondo oscuro para contrastar con la tarjeta de login */}
+        <IonContent style={{ '--background': '#004b3e' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+            
+            <div style={{ 
+              background: '#ffffff', 
+              padding: '40px 30px', 
+              borderRadius: '20px', 
+              width: '100%', 
+              maxWidth: '380px', 
+              textAlign: 'center', 
+              boxShadow: '0 15px 35px rgba(0,0,0,0.3)' 
+            }}>
+              <img src="/assets/logo.png" alt="EWS Energy" style={{ width: '140px', marginBottom: '20px' }} />
+              
+              <h2 style={{ color: '#004b3e', fontWeight: '800', margin: '0 0 10px 0', fontSize: '24px' }}>Bienvenido</h2>
+              <p style={{ color: '#605e5c', marginBottom: '35px', fontSize: '14px', lineHeight: '1.5' }}>
+                Inicia sesión con tu cuenta de Microsoft corporativa para acceder al panel.
+              </p>
+              
+              <IonButton 
+                expand="block" 
+                onClick={handleLogin} 
+                style={{ 
+                  '--background': '#8bc34a', 
+                  '--background-hover': '#7cb342',
+                  '--border-radius': '12px', 
+                  fontWeight: 'bold', 
+                  height: '52px',
+                  letterSpacing: '0.5px'
+                }}
+              >
+                INICIAR SESIÓN
+              </IonButton>
+            </div>
+
           </div>
         </IonContent>
       </IonPage>
     );
   }
 
-
+  // -----------------------------------------------------
+  // 3. APP PRINCIPAL
+  // -----------------------------------------------------
   return (
     <IonApp>
-      {/* Añadimos 'disabled={false}' para asegurar que el SplitPane esté activo */}
       <IonSplitPane contentId="main-content" when="lg">
         
         <Sidebar 
@@ -210,14 +250,13 @@ const App: React.FC = () => {
           onLinkClick={(key) => setActiveView(key)} 
         />
 
-        {/* El IonPage debe tener un fondo blanco/claro para cubrir cualquier residuo */}
         <IonPage id="main-content" style={{ background: '#f9fbf9' }}> 
           <IonHeader className="ion-no-border">
             <IonToolbar style={{ '--background': '#004b3e', '--color': '#ffffff' }}>
               <IonButtons slot="start">
                 <IonMenuButton style={{ color: '#ffffff' }} />
               </IonButtons>
-              <IonTitle style={{ fontWeight: 'bold' }}>EWS ENERGY</IonTitle>
+              <IonTitle style={{ fontWeight: 'bold', letterSpacing: '1px' }}>EWS ENERGY</IonTitle>
             </IonToolbar>
           </IonHeader>
           

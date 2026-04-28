@@ -6,5 +6,5 @@ export interface IPersonal {
     Rol?: string;
     FotoPerfil?: string;
     Email?: string;
-
+    Telefono?: string;
 }
