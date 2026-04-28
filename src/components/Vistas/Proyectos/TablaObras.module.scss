@@ -1,53 +1,55 @@
-$dark-teal: #004d40;
-$light-green: #c5e1a5;
-$accent-green: #8bc34a;
-$soft-gray: #f3f2f1;
-$text-main: #323130;
+$verde-oscuro: #004d40;
+$verde-claro: #8bc34a;
+$fondo-suave: #f8f9fa;
+$blanco: #ffffff;
+$texto-negro: #323130;
 $text-dim: #605e5c;
+$borde: #edebe9;
 
 .container {
-  padding: 40px;
-  background-color: #faf9f8;
+  padding: 32px;
+  background-color: $fondo-suave;
   min-height: 100vh;
 }
 
-.header {
-  margin-bottom: 35px;
+.headerSection {
+  margin-bottom: 25px;
 }
 
-.mainHeading {
-  color: $dark-teal;
+.tituloPrincipal {
+  color: $verde-oscuro;
   font-weight: 800;
   font-size: 28px;
+  letter-spacing: -0.5px;
 }
 
-.subHeading {
+.subtituloHeader {
   color: $text-dim;
   font-size: 14px;
 }
 
-.mainBtn {
-  background-color: $dark-teal;
+.btnNuevaObra {
+  background-color: $verde-oscuro;
   border-radius: 8px;
   height: 44px;
+  padding: 0 24px;
   border: none;
   font-weight: 600;
+  transition: all 0.2s ease;
 
   &:hover {
-    background-color: #00332c;
+    background-color: $verde-claro;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 }
 
-.cardContainer {
-  background: white;
+.tableWrapper {
+  background: $blanco;
   border-radius: 12px;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.04);
-  border: 1px solid #edebe9;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
   overflow: hidden;
-}
-
-.loading {
-  padding: 60px;
+  border: 1px solid $borde;
 }
 
 // Estilos de texto en tabla
@@ -56,7 +58,7 @@ $text-dim: #605e5c;
 }
 
 .txtTitle {
-  color: $text-main;
+  color: $texto-negro;
   font-weight: 700;
   font-size: 14px;
 }
@@ -67,14 +69,14 @@ $text-dim: #605e5c;
 }
 
 .txtNormal {
-  color: $text-main;
+  color: $texto-negro;
   font-size: 13px;
 }
 
 .txtSmallBold {
   font-size: 11px;
   font-weight: 700;
-  color: $dark-teal;
+  color: $verde-oscuro;
 }
 
 .txtSmallDim {
@@ -83,7 +85,7 @@ $text-dim: #605e5c;
 }
 
 .iconDim {
-  color: $accent-green;
+  color: $verde-claro;
   font-size: 14px;
 }
 
@@ -96,27 +98,27 @@ $text-dim: #605e5c;
   }
   
   :global(.ms-ProgressIndicator-progressBar) {
-    background-color: $dark-teal; // Color sólido y sobrio
+    background-color: $verde-oscuro;
     border-radius: 10px;
   }
 
   :global(.ms-ProgressIndicator-itemName), 
   :global(.ms-ProgressIndicator-itemDescription) {
-    display: none; // Quitamos los textos internos de FluentUI para usar los nuestros personalizados
+    display: none; 
   }
 }
 
 .actionIcon {
   color: $text-dim;
   &:hover {
-    color: $dark-teal;
-    background-color: $soft-gray;
+    color: $verde-oscuro;
+    background-color: #f3f2f1;
   }
 }
 
 .fluentList {
   :global(.ms-DetailsRow) {
-    border-bottom: 1px solid $soft-gray;
+    border-bottom: 1px solid #f3f2f1;
     &:hover {
       background-color: #fcfdfc;
     }
@@ -124,6 +126,67 @@ $text-dim: #605e5c;
   
   :global(.ms-DetailsHeader) {
     background-color: #ffffff;
-    border-bottom: 2px solid $soft-gray;
+    border-bottom: 2px solid #f3f2f1;
   }
+}
+
+
+// ============================================
+// ESTILOS DE LA MODAL FLOTANTE (TIPO PERSONAL)
+// ============================================
+
+.modalContainer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  :global(.ms-Modal-main) {
+    background-color: $blanco !important;
+    border-radius: 16px !important;
+    border: 2px solid $verde-oscuro !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+    width: 100% !important;
+    max-width: 550px !important;
+    overflow: hidden !important;
+  }
+}
+
+.modalContent {
+  padding: 30px;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.modalTitle {
+  color: $verde-oscuro;
+  font-weight: 700;
+  margin: 0;
+}
+
+.btnClose {
+  color: #888;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #d32f2f;
+    background-color: #f8f8f8;
+    border-radius: 50%;
+  }
+}
+
+.modalSeparator {
+  margin: 15px 0;
+  border-color: #eee;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
 }

@@ -7,15 +7,14 @@ import {
   PrimaryButton,
   IconButton,
   ProgressIndicator,
+  Separator,
   DetailsList,
   DetailsListLayoutMode,
   SelectionMode,
   IColumn,
-  Panel,
-  PanelType,
+  Modal,
   TextField,
   DefaultButton,
-  Separator,
 } from "@fluentui/react";
 import { ProjectService } from "../../../service/ProjectService";
 import { SPFI } from "@pnp/sp";
@@ -32,26 +31,28 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const hasLoaded = React.useRef(false);
 
-  // Estados para el formulario de Nueva Obra
+  // Estados para el formulario de la Modal
   const [nuevoNombre, setNuevoNombre] = React.useState("");
   const [nuevaUbicacion, setNuevaUbicacion] = React.useState("");
   const [jornadasPropuestas, setJornadasPropuestas] = React.useState<string>("0");
 
   const cargarObras = async () => {
-    console.log("!!! EJECUTANDO CARGAR OBRAS !!!");
+    console.log("!!! EJECUTANDO CARGAR OBRAS !!!"); // <-- LOG CRÍTICO MANTENIDO
     try {
       setLoading(true);
       const projectService = new ProjectService(props.sp);
       const data = await projectService.getObras();
+      console.log("Datos recibidos:", data);
       setObras(data);
     } catch (error) {
-      console.error("Error al cargar obras:", error);
+      console.error("Error en el servicio:", error);
     } finally {
       setLoading(false);
     }
   };
 
   React.useEffect(() => {
+    console.log("useEffect disparado. sp existe?:", !!props.sp); // <-- LOG CRÍTICO MANTENIDO
     if (props.sp && !hasLoaded.current) {
       cargarObras();
       hasLoaded.current = true;
@@ -97,7 +98,7 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
             </Stack>
             <ProgressIndicator 
               percentComplete={progreso} 
-              barHeight={4} // Más delgada y discreta
+              barHeight={4} 
               className={styles.discreetProgress}
             />
           </Stack>
@@ -106,7 +107,7 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
     },
     {
       key: "col4",
-      name: "",
+      name: "Acciones",
       minWidth: 50,
       onRender: (item: IObra) => (
         <IconButton 
@@ -120,22 +121,24 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
 
   return (
     <Stack className={styles.container}>
-      <Stack className={styles.header} horizontal horizontalAlign="space-between" verticalAlign="center">
+      <Stack className={styles.headerSection} horizontal horizontalAlign="space-between" verticalAlign="center">
         <Stack>
-          <Text variant="xxLarge" className={styles.mainHeading}>Mis Proyectos</Text>
-          <Text className={styles.subHeading}>Control de obras y recursos</Text>
+          <Text variant="xxLarge" className={styles.tituloPrincipal}>Mis Proyectos</Text>
+          <Text className={styles.subtituloHeader}>Gestión y seguimiento de obras activas</Text>
         </Stack>
         <PrimaryButton 
           iconProps={{ iconName: "Add" }} 
           text="Nueva Obra" 
+          className={styles.btnNuevaObra}
           onClick={() => setIsOpen(true)}
-          className={styles.mainBtn}
         />
       </Stack>
 
-      <div className={styles.cardContainer}>
+      <div className={styles.tableWrapper}>
         {loading ? (
-          <Spinner size={SpinnerSize.large} label="Actualizando datos..." className={styles.loading} />
+          <Stack verticalAlign="center" horizontalAlign="center" style={{ height: '300px' }}>
+            <Spinner size={SpinnerSize.large} label="Sincronizando con SharePoint..." />
+          </Stack>
         ) : (
           <DetailsList
             items={obras}
@@ -148,47 +151,62 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
         )}
       </div>
 
-      {/* Panel para Crear Nueva Obra */}
-      <Panel
+      {/* =========================================
+          MODAL FLOTANTE ESTILO "PERSONAL"
+      ========================================= */}
+      <Modal
         isOpen={isOpen}
         onDismiss={() => setIsOpen(false)}
-        type={PanelType.medium}
-        headerText="Configuración de Nueva Obra"
-        closeButtonAriaLabel="Cerrar"
+        isBlocking={false}
+        containerClassName={styles.modalContainer}
       >
-        <Stack tokens={{ childrenGap: 15 }} style={{ marginTop: 20 }}>
-          <TextField 
-            label="Nombre de la Obra" 
-            placeholder="Ej: Instalación Fotovoltaica..." 
-            value={nuevoNombre} 
-            onChange={(_, val) => setNuevoNombre(val || "")}
-            required 
-          />
-          <TextField 
-            label="Dirección / Ubicación" 
-            placeholder="Calle, Ciudad..." 
-            value={nuevaUbicacion}
-            onChange={(_, val) => setNuevaUbicacion(val || "")}
-          />
-          <Stack horizontal tokens={{ childrenGap: 10 }}>
+        <div className={styles.modalContent}>
+          <div className={styles.modalHeader}>
+            <Text variant="xLarge" className={styles.modalTitle}>Añadir Nueva Obra</Text>
+            <IconButton
+              iconProps={{ iconName: 'Cancel' }}
+              ariaLabel="Cerrar modal"
+              onClick={() => setIsOpen(false)}
+              className={styles.btnClose}
+            />
+          </div>
+          
+          <Separator className={styles.modalSeparator} />
+
+          <Stack tokens={{ childrenGap: 15 }}>
             <TextField 
-              label="Jornadas Propuestas" 
-              type="number"
-              style={{ width: '100%' }}
-              value={jornadasPropuestas}
-              onChange={(_, val) => setJornadasPropuestas(val || "0")}
+              label="Nombre de la Obra" 
+              placeholder="Ej: Instalación Fotovoltaica..." 
+              value={nuevoNombre} 
+              onChange={(_, val) => setNuevoNombre(val || "")}
+              required 
             />
             <TextField 
-              label="Estado Inicial" 
-              value="En Proceso" 
-              disabled 
-              style={{ width: '100%' }} 
+              label="Dirección / Ubicación" 
+              placeholder="Calle, Ciudad..." 
+              value={nuevaUbicacion}
+              onChange={(_, val) => setNuevaUbicacion(val || "")}
             />
+            <Stack horizontal tokens={{ childrenGap: 10 }}>
+              <TextField 
+                label="Jornadas Propuestas" 
+                type="number"
+                style={{ width: '100%' }}
+                value={jornadasPropuestas}
+                onChange={(_, val) => setJornadasPropuestas(val || "0")}
+              />
+              <TextField 
+                label="Estado Inicial" 
+                value="En Proceso" 
+                disabled 
+                style={{ width: '100%' }} 
+              />
+            </Stack>
           </Stack>
           
-          <Separator style={{ marginTop: 20 }} />
+          <Separator className={styles.modalSeparator} />
           
-          <Stack horizontal horizontalAlign="end" tokens={{ childrenGap: 10 }}>
+          <div className={styles.modalFooter}>
             <DefaultButton text="Cancelar" onClick={() => setIsOpen(false)} />
             <PrimaryButton 
               text="Guardar Proyecto" 
@@ -197,9 +215,9 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
                 setIsOpen(false);
               }} 
             />
-          </Stack>
-        </Stack>
-      </Panel>
+          </div>
+        </div>
+      </Modal>
     </Stack>
   );
 };
