@@ -1,2 +1,51 @@
-/* For information on how to create your own theme, please refer to:
-http://ionicframework.com/docs/theming/ */
+/* DISEÑO LOGIN PREMIUM EWS */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  
+ 
+  background: radial-gradient(
+    circle at 70% 30%, 
+    #005a4a 0%,    
+    #00241b 60%,   
+    #000000 100%   
+  );
+  
+  padding: 20px;
+}
+
+.login-card {
+ 
+  background: rgba(0, 0, 0, 0.2); 
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 40px 30px;
+  border-radius: 35px;
+  text-align: center;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+}
+
+.login-logo-text {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -2px;
+  margin: 0;
+  line-height: 1;
+}
+
+.login-subtitle {
+  color: #00c853; /* Este verde resalta mucho sobre el fondo oscuro */
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 30px;
+}
