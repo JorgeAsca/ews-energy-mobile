@@ -16,6 +16,7 @@ import {
   ProgressIndicator,
   Dropdown,
   IDropdownOption,
+  Link, 
 } from "@fluentui/react";
 import { ProjectService } from "../../../service/ProjectService";
 import { PersonalService } from "../../../service/PersonalService";
@@ -37,18 +38,29 @@ interface IVistaPlanificacionProps {
   sp: SPFI;
 }
 
+// Función auxiliar para obtener el Lunes de cualquier fecha dada
+const obtenerLunes = (d: Date): Date => {
+  const date = new Date(d);
+  date.setHours(0, 0, 0, 0);
+  const day = date.getDay() || 7; 
+  date.setDate(date.getDate() - day + 1);
+  return date;
+};
+
 export const VistaPlanificacion: React.FC<IVistaPlanificacionProps> = (props) => {
   const [obras, setObras] = React.useState<IObra[]>([]);
   const [personalDisponible, setPersonalDisponible] = React.useState<IPersonal[]>([]);
   const [asignaciones, setAsignaciones] = React.useState<IAsignacion[]>([]);
   const [loading, setLoading] = React.useState(true);
   
+  // Controla qué semana estamos viendo (siempre apunta al Lunes de esa semana)
+  const [fechaInicioSemana, setFechaInicioSemana] = React.useState<Date>(obtenerLunes(new Date()));
+
   const [selectedAsig, setSelectedAsig] = React.useState<{
     asig: IAsignacion;
     persona: IPersonal;
   } | null>(null);
   
-  // NUEVO ESTADO: Para saber a qué persona nueva hemos seleccionado en el desplegable
   const [editPersonId, setEditPersonId] = React.useState<number | null>(null);
   
   const [obrasPendientes, setObrasPendientes] = React.useState<IObraPendiente[]>([]);
@@ -66,21 +78,6 @@ export const VistaPlanificacion: React.FC<IVistaPlanificacionProps> = (props) =>
     }),
     [props.sp],
   );
-
-  const getFechaPorDia = (nombreDia: string): Date => {
-    const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0); 
-    
-    const diaSemana = hoy.getDay() || 7; 
-    const lunes = new Date(hoy);
-    lunes.setDate(hoy.getDate() - diaSemana + 1);
-    
-    const index = DIAS_SEMANA.indexOf(nombreDia);
-    const fechaResultado = new Date(lunes);
-    fechaResultado.setDate(lunes.getDate() + index);
-    
-    return fechaResultado;
-  };
 
   const cargarDatos = async () => {
     setLoading(true);
@@ -106,16 +103,46 @@ export const VistaPlanificacion: React.FC<IVistaPlanificacionProps> = (props) =>
     }
   }, [props.sp]);
 
-  const onDrop = async (ev: React.DragEvent, obraId: number, dia: string) => {
+  // Controles de navegación del calendario
+  const irSemanaAnterior = () => {
+    const nuevaFecha = new Date(fechaInicioSemana);
+    nuevaFecha.setDate(nuevaFecha.getDate() - 7);
+    setFechaInicioSemana(nuevaFecha);
+  };
+
+  const irSemanaSiguiente = () => {
+    const nuevaFecha = new Date(fechaInicioSemana);
+    nuevaFecha.setDate(nuevaFecha.getDate() + 7);
+    setFechaInicioSemana(nuevaFecha);
+  };
+
+  const irHoy = () => {
+    setFechaInicioSemana(obtenerLunes(new Date()));
+  };
+
+  // Calculamos dinámicamente los 5 días de la semana actual que estamos viendo
+  const diasDeLaSemanaActual = React.useMemo(() => {
+    return [0, 1, 2, 3, 4].map(offset => {
+      const d = new Date(fechaInicioSemana);
+      d.setDate(d.getDate() + offset);
+      return {
+        nombre: DIAS_SEMANA[offset],
+        fechaObj: d,
+        diaNumero: d.getDate(),
+        mesTexto: d.toLocaleString('es-ES', { month: 'short' })
+      };
+    });
+  }, [fechaInicioSemana]);
+
+  const onDrop = async (ev: React.DragEvent, obraId: number, fechaExacta: Date) => {
     ev.preventDefault();
     const personId = parseInt(ev.dataTransfer.getData("personId"));
-    const fecha = getFechaPorDia(dia);
     try {
       await services.asignaciones.asignarPersonal({
         ObraId: obraId,
         PersonalId: personId,
-        FechaInicio: fecha,
-        FechaFinPrevista: fecha,
+        FechaInicio: fechaExacta,
+        FechaFinPrevista: fechaExacta,
         EstadoProgreso: 0,
       });
       await cargarDatos();
@@ -124,7 +151,6 @@ export const VistaPlanificacion: React.FC<IVistaPlanificacionProps> = (props) =>
     }
   };
 
-  // NUEVA FUNCIÓN: Para guardar el cambio de persona
   const editarAsignacion = async () => {
     if (!selectedAsig?.asig.Id || !editPersonId) return;
     try {
@@ -149,17 +175,18 @@ export const VistaPlanificacion: React.FC<IVistaPlanificacionProps> = (props) =>
     }
   };
 
-  // Preparamos las opciones para el desplegable de trabajadores
   const personalOptions: IDropdownOption[] = personalDisponible.map(p => ({
     key: p.Id,
     text: p.NombreyApellido
   }));
 
+  const mesAnioActualTexto = fechaInicioSemana.toLocaleString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase();
+
   if (loading) return <Spinner label="Cargando planificación semanal..." size={SpinnerSize.large} />;
 
   return (
     <Stack tokens={{ childrenGap: 15 }} className={styles.vistaPlanificacion}>
-      {/* HEADER */}
+      {/* HEADER PRINCIPAL */}
       <Stack horizontal horizontalAlign="space-between" verticalAlign="center">
         <Text variant="xLarge" className={styles.title}>
           Planificación Semanal 📅
@@ -187,6 +214,16 @@ export const VistaPlanificacion: React.FC<IVistaPlanificacionProps> = (props) =>
         </div>
       </div>
 
+      {/* CONTROLES DEL CALENDARIO */}
+      <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 10 }} style={{ padding: '10px 0', backgroundColor: '#fff', borderRadius: '8px', paddingLeft: '15px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+        <IconButton iconProps={{ iconName: "ChevronLeft" }} title="Semana anterior" onClick={irSemanaAnterior} />
+        <DefaultButton text="Hoy" onClick={irHoy} />
+        <IconButton iconProps={{ iconName: "ChevronRight" }} title="Semana siguiente" onClick={irSemanaSiguiente} />
+        <Text variant="large" style={{ fontWeight: 600, marginLeft: '15px', color: '#0078d4' }}>
+          {mesAnioActualTexto}
+        </Text>
+      </Stack>
+
       {/* CUERPO: TABLA Y PENDIENTES */}
       <Stack horizontal tokens={{ childrenGap: 15 }} styles={{ root: { width: "100%", alignItems: "start" } }}>
         <div className={styles.tableContainer}>
@@ -194,8 +231,13 @@ export const VistaPlanificacion: React.FC<IVistaPlanificacionProps> = (props) =>
             <thead>
               <tr>
                 <th className={styles.colObra}>Obra</th>
-                {DIAS_SEMANA.map((d) => (
-                  <th key={d} className={styles.colDia}>{d}</th>
+                {diasDeLaSemanaActual.map((dia) => (
+                  <th key={dia.nombre} className={styles.colDia} style={{ textAlign: 'center', padding: '10px 0' }}>
+                    <div style={{ fontWeight: 600 }}>{dia.nombre}</div>
+                    <div style={{ fontSize: '13px', fontWeight: 'normal', color: '#605e5c', marginTop: '2px' }}>
+                      {dia.diaNumero} {dia.mesTexto}
+                    </div>
+                  </th>
                 ))}
               </tr>
             </thead>
@@ -204,7 +246,18 @@ export const VistaPlanificacion: React.FC<IVistaPlanificacionProps> = (props) =>
                 <tr key={obra.Id}>
                   <td className={styles.cellObra}>
                     <Stack tokens={{ childrenGap: 4 }}>
-                      <Text variant="mediumPlus" styles={{ root: { fontWeight: 600 } }}>{obra.Title}</Text>
+                      
+                      {/* ENLACE CLICKEABLE A LA OBRA EN LA MISMA PESTAÑA */}
+                      <Link 
+                        styles={{ root: { fontWeight: 600, fontSize: '14px', color: '#0078d4', textDecoration: 'none' } }}
+                        onClick={() => {
+                          const urlSharePoint = `${window.location.origin}/sites/EWSStockManagement/Lists/Obras/DispForm.aspx?ID=${obra.Id}`;
+                          window.location.href = urlSharePoint;
+                        }}
+                      >
+                        {obra.Title}
+                      </Link>
+
                       <Stack>
                         <Text variant="small" styles={{ root: { color: '#666', fontSize: '11px' } }}>
                           Avance: {obra.ProgresoReal || 0}% • {obra.EstadoObra}
@@ -217,24 +270,23 @@ export const VistaPlanificacion: React.FC<IVistaPlanificacionProps> = (props) =>
                     </Stack>
                   </td>
 
-                  {DIAS_SEMANA.map((dia) => {
-                    const fechaDiaObj = getFechaPorDia(dia);
-                    
+                  {/* Celdas de los días de la semana dinámica */}
+                  {diasDeLaSemanaActual.map((dia) => {
                     const asigsEnDia = asignaciones.filter((a) => {
                       if (a.ObraId !== obra.Id || !a.FechaInicio) return false;
                       const fechaAsig = new Date(a.FechaInicio);
                       return (
-                        fechaAsig.getFullYear() === fechaDiaObj.getFullYear() &&
-                        fechaAsig.getMonth() === fechaDiaObj.getMonth() &&
-                        fechaAsig.getDate() === fechaDiaObj.getDate()
+                        fechaAsig.getFullYear() === dia.fechaObj.getFullYear() &&
+                        fechaAsig.getMonth() === dia.fechaObj.getMonth() &&
+                        fechaAsig.getDate() === dia.fechaObj.getDate()
                       );
                     });
 
                     return (
                       <td
-                        key={dia}
+                        key={dia.nombre}
                         onDragOver={(e) => e.preventDefault()}
-                        onDrop={(e) => onDrop(e, obra.Id, dia)}
+                        onDrop={(e) => onDrop(e, obra.Id, dia.fechaObj)}
                         className={styles.dropZone}
                       >
                         <div className={styles.asignadosConsola}>
@@ -245,7 +297,7 @@ export const VistaPlanificacion: React.FC<IVistaPlanificacionProps> = (props) =>
                                 key={a.Id}
                                 onClick={() => {
                                   setSelectedAsig({ asig: a, persona: p });
-                                  setEditPersonId(p.Id); // Al abrir el modal, preseleccionamos a la persona actual
+                                  setEditPersonId(p.Id); 
                                 }}
                                 className={styles.fotoAsignada}
                               >
@@ -316,12 +368,12 @@ export const VistaPlanificacion: React.FC<IVistaPlanificacionProps> = (props) =>
           <PrimaryButton 
             onClick={editarAsignacion} 
             text="Guardar Cambios" 
-            disabled={editPersonId === selectedAsig?.persona.Id} // Se deshabilita si no hay cambios
+            disabled={editPersonId === selectedAsig?.persona.Id} 
           />
           <DefaultButton 
             onClick={eliminarAsignacion} 
             text="Eliminar" 
-            styles={{ root: { color: '#d13438' } }} // Color rojo sutil para indicar peligro
+            styles={{ root: { color: '#d13438' } }} 
           />
           <DefaultButton onClick={() => setSelectedAsig(null)} text="Cancelar" />
         </DialogFooter>
