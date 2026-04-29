@@ -45,3 +45,17 @@
 .icon-default {
     color: #8a8a8a;
 }
+
+/* --- NUEVO: Control del ancho del menú lateral --- */
+
+/* 1. Controla el ancho cuando la pantalla es grande (vista de PC/Tablet) */
+ion-split-pane {
+    --side-width: 240px;
+    --side-min-width: 240px;
+    --side-max-width: 240px;
+}
+
+/* 2. Controla el ancho cuando el menú es desplegable (vista móvil) */
+.sidebar-menu {
+    --width: 240px;
+}

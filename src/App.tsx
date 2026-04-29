@@ -16,12 +16,8 @@ import { VistaPlanificacion } from './components/Vistas/Planificacion/VistaPlani
 import { VistaAsignaciones } from './components/Vistas/Asignaciones/VistaAsignaciones';
 import { VistaFotosObra } from './components/Vistas/Fotos/VistaFotosObra';
 import { VistaHistorialTarjetas } from './components/Vistas/historial/VistaHistorialReportes';
-<<<<<<< HEAD
 // NUEVA IMPORTACIÓN: Tu vista de Clientes
 import { ListaClientes } from './components/Vistas/Cliente/ListaClientes';
-
-=======
->>>>>>> bbbe153aa410617fc0c3b293ee979192c3f02b9e
 import { Queryable } from "@pnp/queryable";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { initializeIcons } from '@fluentui/react/lib/Icons';
