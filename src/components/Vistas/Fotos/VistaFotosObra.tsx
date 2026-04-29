@@ -55,15 +55,15 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
     const [personalSeleccionado, setPersonalSeleccionado] = React.useState<number[]>([]);
     const [horasPorPersonal, setHorasPorPersonal] = React.useState<Record<number, number>>({});
     
-    // ESTADOS DE FOTOS (FOTOS FINAL / REPORTES)
+    // REFERENCIAS Y ESTADOS DE CÁMARA
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const fileInputPreviasRef = React.useRef<HTMLInputElement>(null); // Referencia para fotos previas
     const [fotos, setFotos] = React.useState<any[]>([]);
+    const [fotosPrevias, setFotosPrevias] = React.useState<any[]>([]); // Cambiado a array de objetos para consistencia
     const [comentarios, setComentarios] = React.useState("");
     const [mensajeExito, setMensajeExito] = React.useState(false);
     const [procesandoCaptura, setProcesandoCaptura] = React.useState(false);
-
-    // NUEVO: ESTADO PARA FOTOS PREVIAS (SIMULADAS O CARGADAS)
-    const [fotosPrevias, setFotosPrevias] = React.useState<string[]>([]);
+    const [procesandoPrevias, setProcesandoPrevias] = React.useState(false);
 
     const [data, setData] = React.useState<{ obras: IObra[]; asignaciones: any[]; personal: IPersonal[] }>({
         obras: [],
@@ -121,11 +121,10 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
             );
             setPersonalObra(sugeridos);
         }
-        // Simulamos carga de fotos previas de la obra
-        setFotosPrevias(["https://via.placeholder.com/150", "https://via.placeholder.com/150"]); 
+        setFotosPrevias([]); // Resetear capturas previas al cambiar de obra
         setPersonalSeleccionado([]);
         setHorasPorPersonal({});
-        setPaso(2); // Ir a Información de Obra
+        setPaso(2); 
     };
 
     const handleTogglePersonal = (id: number, isChecked: boolean) => {
@@ -142,6 +141,24 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
         }
     };
 
+    // Manejador para fotos del paso 3 (Previas)
+    const handleFileChangePrevias = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        setProcesandoPrevias(true);
+        try {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFotosPrevias(prev => [...prev, { File: file, Url: reader.result as string }]);
+                setProcesandoPrevias(false);
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            setProcesandoPrevias(false);
+        }
+    };
+
+    // Manejador para fotos del paso 5 (Finales)
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -159,7 +176,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
     };
 
     const enviarReporte = async () => {
-        if (!obraSeleccionada || !currentUser || fotos.length === 0) return;
+        if (!obraSeleccionada || !currentUser || (fotos.length === 0 && fotosPrevias.length === 0)) return;
         setSubiendo(true);
         try {
             const resumenHoras = personalSeleccionado.map(id => {
@@ -171,7 +188,10 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                 ? `${comentarios}\n\n[Horas registradas: ${resumenHoras}]`
                 : comentarios;
 
-            for (const fotoObj of fotos) {
+            // Unimos todas las fotos (previas y finales) para subirlas al reporte
+            const todasLasFotos = [...fotosPrevias, ...fotos];
+
+            for (const fotoObj of todasLasFotos) {
                 await services.photos.subirFotoProyecto(
                     fotoObj.File,
                     obraSeleccionada.Title,
@@ -187,6 +207,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
             setTimeout(() => {
                 setMensajeExito(false);
                 setFotos([]);
+                setFotosPrevias([]);
                 setComentarios("");
                 setPaso(1);
             }, 3000);
@@ -233,7 +254,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                     </section>
                 )}
 
-                {/* PASO 2: INFORMACIÓN DE LA OBRA (MAPA Y PLANOS) */}
+                {/* PASO 2: INFORMACIÓN DE LA OBRA */}
                 {paso === 2 && (
                     <section className={styles.stepSection}>
                         <Text variant="xLarge" className={styles.stepTitle}>Datos de la Obra 🏗️</Text>
@@ -260,21 +281,33 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
 
                         <Stack horizontal tokens={{ childrenGap: 12 }} style={{ marginTop: 24 }}>
                             <DefaultButton text="Atrás" onClick={() => setPaso(1)} styles={ewsDefaultButtonStyles} style={{ flex: 1 }} />
-                            <PrimaryButton text="Ver Fotos Previas" onClick={() => setPaso(3)} styles={ewsPrimaryButtonStyles} style={{ flex: 2 }} />
+                            <PrimaryButton text="Tomar Fotos Previas" onClick={() => setPaso(3)} styles={ewsPrimaryButtonStyles} style={{ flex: 2 }} />
                         </Stack>
                     </section>
                 )}
 
-                {/* PASO 3: FOTOS PREVIAS */}
+                {/* PASO 3: TOMAR FOTOS PREVIAS (MODIFICADO) */}
                 {paso === 3 && (
                     <section className={styles.stepSection}>
                         <Text variant="xLarge" className={styles.stepTitle}>Estado Previo 📸</Text>
-                        <Text block style={{ marginBottom: 16, color: '#666' }}>Fotos del último reporte en esta obra:</Text>
+                        <Text block style={{ marginBottom: 16, color: '#666' }}>Captura el estado actual antes de comenzar:</Text>
                         
+                        <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} ref={fileInputPreviasRef} onChange={handleFileChangePrevias} />
+
+                        <div className={styles.uploadZone} onClick={() => fileInputPreviasRef.current?.click()}>
+                            {procesandoPrevias ? <Spinner /> : (
+                                <>
+                                    <Icon iconName="Camera" className={styles.uploadIcon} />
+                                    <p className={styles.uploadTitle}>Toca para tomar foto previa</p>
+                                </>
+                            )}
+                        </div>
+
                         <div className={styles.previewContainer}>
-                            {fotosPrevias.map((url, i) => (
+                            {fotosPrevias.map((f, i) => (
                                 <div key={i} className={styles.previewItem}>
-                                    <img src={url} alt="previo" className={styles.previewImage} />
+                                    <img src={f.Url} alt="previo" className={styles.previewImage} />
+                                    <IconButton iconProps={{ iconName: "Cancel" }} className={styles.deleteButton} onClick={() => setFotosPrevias(prev => prev.filter((_, idx) => idx !== i))} />
                                 </div>
                             ))}
                         </div>
@@ -286,7 +319,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                     </section>
                 )}
 
-                {/* PASO 4: SELECCIÓN DE PERSONAL (LOGICA ORIGINAL) */}
+                {/* PASO 4: SELECCIÓN DE PERSONAL */}
                 {paso === 4 && (
                     <section className={styles.stepSection}>
                         <Text variant="xLarge" className={styles.stepTitle}>Personal Presente 👷🏽</Text>
@@ -307,7 +340,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                                             />
                                             {isSelected && (
                                                 <div style={{ marginTop: 10 }}>
-                                                    <Text variant="small">Horas: <strong>{horas}h</strong> ({Math.round((horas/8)*100)}%)</Text>
+                                                    <Text variant="small">Horas: <strong>{horas}h</strong></Text>
                                                     <Slider min={0} max={8} step={0.5} value={horas} onChange={(v) => setHorasPorPersonal(prev => ({ ...prev, [persona.Id]: v }))} />
                                                 </div>
                                             )}
@@ -319,12 +352,12 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
 
                         <Stack horizontal tokens={{ childrenGap: 12 }} style={{ marginTop: 24 }}>
                             <DefaultButton text="Atrás" onClick={() => setPaso(3)} styles={ewsDefaultButtonStyles} style={{ flex: 1 }} />
-                            <PrimaryButton text="Continuar a Cámara" onClick={() => setPaso(5)} styles={ewsPrimaryButtonStyles} style={{ flex: 2 }} />
+                            <PrimaryButton text="Continuar a Cámara Final" onClick={() => setPaso(5)} styles={ewsPrimaryButtonStyles} style={{ flex: 2 }} />
                         </Stack>
                     </section>
                 )}
 
-                {/* PASO 5: CÁMARA Y COMENTARIOS FINAL (LOGICA ORIGINAL) */}
+                {/* PASO 5: CÁMARA Y COMENTARIOS FINAL */}
                 {paso === 5 && (
                     <section className={styles.stepSection}>
                         <Text variant="xLarge" className={styles.stepTitle}>Fotos del Final 📸</Text>
@@ -358,7 +391,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                             <PrimaryButton
                                 text={subiendo ? "Enviando..." : "Finalizar Reporte"}
                                 onClick={enviarReporte}
-                                disabled={fotos.length === 0 || subiendo}
+                                disabled={(fotos.length === 0 && fotosPrevias.length === 0) || subiendo}
                                 styles={ewsPrimaryButtonStyles}
                                 style={{ flex: 2 }}
                             />
