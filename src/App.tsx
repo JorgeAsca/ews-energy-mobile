@@ -18,6 +18,8 @@ import { VistaPlanificacion } from './components/Vistas/Planificacion/VistaPlani
 import { VistaAsignaciones } from './components/Vistas/Asignaciones/VistaAsignaciones';
 import { VistaFotosObra } from './components/Vistas/Fotos/VistaFotosObra';
 import { VistaHistorialTarjetas } from './components/Vistas/historial/VistaHistorialReportes';
+// NUEVA IMPORTACIÓN: Tu vista de Clientes
+import { ListaClientes } from './components/Vistas/Cliente/ListaClientes';
 
 import { Queryable } from "@pnp/queryable";
 import { PublicClientApplication } from "@azure/msal-browser";
@@ -78,7 +80,6 @@ const App: React.FC = () => {
     if (accounts.length > 0) {
       const email = accounts[0].username.toLowerCase();
       setUserEmail(email);
-      // REGLA: Si es operario, su pantalla de inicio es Fotos (el Diario)
       if (email === "prueba20262@proyteal.com") {
         setActiveView("fotos");
       }
@@ -176,6 +177,8 @@ const App: React.FC = () => {
               {!isRestricted && activeView === "obras" && <Obras sp={sp} activeView={activeView} />}
               {!isRestricted && activeView === "inventario" && <ListaMateriales sp={sp} />}
               {!isRestricted && activeView === "asignaciones" && <VistaAsignaciones sp={sp} />}
+              {/* NUEVA VISTA DE CLIENTES (Solo para administradores) */}
+              {!isRestricted && activeView === "clientes" && <ListaClientes sp={sp} />}
 
               {/* VISTAS COMPARTIDAS (Administrador y Operario) */}
               {activeView === "fotos" && <VistaFotosObra sp={sp} />}

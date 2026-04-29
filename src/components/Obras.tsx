@@ -11,6 +11,7 @@ import { VistaAsignaciones } from './Vistas/Asignaciones/VistaAsignaciones';
 import { VistaFotosObra } from './Vistas/Fotos/VistaFotosObra';
 import { VistaPlanificacion } from './Vistas/Planificacion/VistaPlanificacion';
 import { VistaHistorialTarjetas } from './Vistas/historial/VistaHistorialReportes';
+import { ListaClientes } from './Vistas/Cliente/ListaClientes';
 
 interface IObrasMobileProps {
   sp: SPFI | null;
@@ -40,6 +41,7 @@ export const Obras: React.FC<IObrasMobileProps> = (props) => {
       case 'asignaciones': return <VistaAsignaciones sp={sp} />;
       case 'fotos': return <VistaFotosObra sp={sp} />;
       case 'historial': return <VistaHistorialTarjetas sp={sp} />;
+      case 'clientes': return <ListaClientes sp={sp} />;
       default: return <TablaObras sp={sp} />;
     }
   };

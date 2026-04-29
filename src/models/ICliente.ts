@@ -1,6 +1,9 @@
 export interface ICliente {
-    Id: number;
-    Title: string; // Nombre del cliente
-    CIF?: string;
-    EmpresaRelacionadaId?: number; // ID del Lookup
+  Id?: number;
+  Title: string; 
+  EmpresaRelacionada?: string; 
+  CIF?: string;
+  Direccion?: string;
+  Email?: string;
+  Telefono?: string; // <--- Change to the real internal name
 }
