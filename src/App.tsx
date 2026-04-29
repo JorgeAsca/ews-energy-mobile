@@ -1,15 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { 
-  IonApp, setupIonicReact, IonContent, IonButton, IonPage, 
-  IonSpinner, IonHeader, IonToolbar, IonTitle, IonButtons, 
-  IonMenuButton, IonSplitPane 
+import {
+  IonApp, setupIonicReact, IonContent, IonButton, IonPage,
+  IonSpinner, IonHeader, IonToolbar, IonTitle, IonButtons,
+  IonMenuButton, IonSplitPane
 } from '@ionic/react';
 import { SPFI, spfi, SPBrowser } from "@pnp/sp";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
-
-// --- IMPORTACIÓN DE TUS COMPONENTES ---
 import { Obras } from './components/Obras';
 import { Sidebar } from './components/Navegacion/Sidebar';
 import { ListaMateriales } from './components/Vistas/Inventario/ListaMateriales';
@@ -18,16 +16,17 @@ import { VistaPlanificacion } from './components/Vistas/Planificacion/VistaPlani
 import { VistaAsignaciones } from './components/Vistas/Asignaciones/VistaAsignaciones';
 import { VistaFotosObra } from './components/Vistas/Fotos/VistaFotosObra';
 import { VistaHistorialTarjetas } from './components/Vistas/historial/VistaHistorialReportes';
+<<<<<<< HEAD
 // NUEVA IMPORTACIÓN: Tu vista de Clientes
 import { ListaClientes } from './components/Vistas/Cliente/ListaClientes';
 
+=======
+>>>>>>> bbbe153aa410617fc0c3b293ee979192c3f02b9e
 import { Queryable } from "@pnp/queryable";
 import { PublicClientApplication } from "@azure/msal-browser";
 import { initializeIcons } from '@fluentui/react/lib/Icons';
 import { App as CapApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
-
-// Estilos
 import '@ionic/react/css/core.css';
 import './theme/variables.css';
 
@@ -36,18 +35,18 @@ setupIonicReact();
 
 const msalConfig = {
   auth: {
-    clientId: "26cc7630-ed5a-4cde-9db8-a7ded2c00638", 
-    authority: "https://login.microsoftonline.com/6cf350dd-61d1-49c8-8197-f6b6b870f6b4", 
-    redirectUri: Capacitor.isNativePlatform() 
-      ? "msauth://io.ionic.starter/XAjh9Gj1qyMt7E7q%2Fyhop%2Beq4cc%3D" 
-      : window.location.origin, 
+    clientId: "26cc7630-ed5a-4cde-9db8-a7ded2c00638",
+    authority: "https://login.microsoftonline.com/6cf350dd-61d1-49c8-8197-f6b6b870f6b4",
+    redirectUri: Capacitor.isNativePlatform()
+      ? "msauth://io.ionic.starter/XAjh9Gj1qyMt7E7q%2Fyhop%2Beq4cc%3D"
+      : window.location.origin,
   },
   cache: {
     cacheLocation: "localStorage",
-    storeAuthStateInCookie: false 
+    storeAuthStateInCookie: false
   },
   system: {
-    redirectNavigationTimeout: 300000 
+    redirectNavigationTimeout: 300000
   }
 };
 
@@ -69,7 +68,7 @@ const App: React.FC = () => {
           init.headers = {
             ...init.headers,
             "Authorization": `Bearer ${token}`,
-            "Accept": "application/json;odata=verbose" 
+            "Accept": "application/json;odata=verbose"
           };
           return [url, init] as any;
         });
@@ -146,11 +145,60 @@ const App: React.FC = () => {
   if (!isAuthenticated || !sp) {
     return (
       <IonPage>
-        <IonContent style={{ '--background': '#004b3e' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-            <div style={{ background: '#fff', padding: '40px', borderRadius: '20px', textAlign: 'center' }}>
-               <h2 style={{ color: '#004b3e' }}>EWS ENERGY</h2>
-               <IonButton onClick={handleLogin} style={{ '--background': '#004b3e' }}>INICIAR SESIÓN</IonButton>
+        <IonContent className="ion-no-scroll">
+          <div className="login-container">
+            <div className="login-card">
+              {/* Cabecera de marca */}
+              <h1 className="login-logo-text">EWS</h1>
+              <div className="login-subtitle">Energy</div>
+
+              <div style={{ marginBottom: '40px' }}>
+                <p style={{ color: '#fff', fontSize: '1.1rem', fontWeight: '500', margin: '0' }}>
+                  Sistema de Gestión
+                </p>
+              </div>
+
+              <IonButton
+                onClick={handleLogin}
+                expand="block"
+                style={{
+                  '--background': '#ffffff',
+                  '--color': '#2f2f2f', /* Un gris casi negro para el texto */
+                  '--border-radius': '14px',
+                  'height': '58px',
+                  'margin-top': '25px',
+                  'font-weight': '700',
+                  'font-size': '1.05rem',
+                  /* Sombra más marcada para que despegue del fondo verde */
+                  '--box-shadow': '0 8px 25px rgba(0,0,0,0.4)',
+                  'text-transform': 'none'
+                }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21" style={{ marginRight: '12px' }}>
+                    <path fill="#f25022" d="M1 1h9v9H1z" />
+                    <path fill="#7fbb00" d="M11 1h9v9h-9z" />
+                    <path fill="#00a1f1" d="M1 11h9v9H1z" />
+                    <path fill="#ffb900" d="M11 11h9v9h-9z" />
+                  </svg>
+                  Continuar con Microsoft
+                </div>
+              </IonButton>
+
+              <div style={{
+                marginTop: '40px',
+                paddingTop: '20px',
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '5px'
+              }}>
+                <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.75rem' }}>
+                  CONEXIÓN ENCRIPTADA
+                </span>
+                <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', fontWeight: '600' }}>
+                  Microsoft Azure AD
+                </span>
+              </div>
             </div>
           </div>
         </IonContent>
@@ -164,7 +212,7 @@ const App: React.FC = () => {
     <IonApp>
       <IonSplitPane contentId="main-content" when="lg">
         <Sidebar contentId="main-content" selectedKey={activeView} onLinkClick={(key) => setActiveView(key)} userEmail={userEmail} />
-        <IonPage id="main-content" style={{ background: '#f9fbf9' }}> 
+        <IonPage id="main-content" style={{ background: '#f9fbf9' }}>
           <IonHeader className="ion-no-border">
             <IonToolbar style={{ '--background': '#004b3e', '--color': '#ffffff' }}>
               <IonButtons slot="start"><IonMenuButton style={{ color: '#ffffff' }} /></IonButtons>
