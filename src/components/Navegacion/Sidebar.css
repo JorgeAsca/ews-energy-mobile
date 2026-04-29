@@ -1,0 +1,47 @@
+/* Sidebar.css */
+
+.menu-toolbar {
+    --background: #004b3e;
+    --color: #ffffff;
+}
+
+.menu-title {
+    font-weight: bold;
+    font-size: 16px;
+    letter-spacing: 1px;
+}
+
+.sidebar-content {
+    --background: #ffffff;
+}
+
+.menu-item-custom {
+    --border-radius: 0 20px 20px 0;
+    --margin-end: 10px;
+    margin-bottom: 4px;
+    --transition: 0.2s ease-in-out;
+}
+
+/* Estilo para el item cuando está seleccionado */
+.item-selected {
+    --background: #f0f7f5;
+    --color: #004b3e;
+}
+
+.menu-label {
+    font-size: 14px;
+    transition: font-weight 0.2s;
+}
+
+.label-selected {
+    font-weight: bold;
+    color: #004b3e;
+}
+
+.icon-selected {
+    color: #004b3e !important;
+}
+
+.icon-default {
+    color: #8a8a8a;
+}

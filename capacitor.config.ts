@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
-  appName: 'ews-energy-mobile',
+  appName: 'EwsApp',
   webDir: 'dist'
 };
 

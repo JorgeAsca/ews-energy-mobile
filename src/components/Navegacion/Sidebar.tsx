@@ -1,86 +1,75 @@
-import * as React from "react";
-import {
-  IonMenu,
-  IonContent,
-  IonList,
-  IonItem,
-  IonIcon,
-  IonLabel,
-  IonMenuToggle,
-  IonHeader,
-  IonToolbar,
-  IonTitle
-} from "@ionic/react";
-import { 
-  cubeOutline, 
-  peopleOutline, 
-  constructOutline, 
-  calendarOutline, 
-  linkOutline, 
-  cameraOutline, 
-  timeOutline 
-} from "ionicons/icons";
+import * as React from 'react';
+import { IonMenu, IonHeader, IonToolbar, IonTitle, IonContent, IonList, IonMenuToggle, IonItem, IonIcon, IonLabel } from '@ionic/react';
+import { constructOutline, cubeOutline, linkOutline, cameraOutline, peopleOutline, calendarOutline, timeOutline } from 'ionicons/icons';
+import './Sidebar.css';
 
 interface ISidebarProps {
+  contentId: string;
   selectedKey: string;
   onLinkClick: (key: string) => void;
-  contentId: string; 
+  userEmail?: string;
 }
 
-const menuItems = [
-  { name: "Inventario", key: "inventario", icon: cubeOutline },
-  { name: "Personal", key: "personal", icon: peopleOutline },
-  { name: "Obras", key: "obras", icon: constructOutline },
-  { name: "Planificación", key: "planificacion", icon: calendarOutline },
-  { name: "Asignaciones", key: "asignaciones", icon: linkOutline },
-  { name: "Diario", key: "fotos", icon: cameraOutline },
-  { name: "Control de Obras", key: "historial", icon: timeOutline },
+interface IMenuItem {
+  name: string;
+  key: string;
+  icon: string;
+}
+
+const menuItems: IMenuItem[] = [
+  { name: 'Proyectos',    key: 'obras',         icon: constructOutline },
+  { name: 'Inventario',  key: 'inventario',     icon: cubeOutline },
+  { name: 'Asignaciones',key: 'asignaciones',   icon: linkOutline },
+  { name: 'Diario',      key: 'fotos',          icon: cameraOutline },
+  { name: 'Personal',    key: 'personal',       icon: peopleOutline },
+  { name: 'Planificación',key: 'planificacion', icon: calendarOutline },
+  { name: 'Historial',   key: 'historial',      icon: timeOutline },
 ];
 
 export const Sidebar: React.FC<ISidebarProps> = (props) => {
+  const isRestricted = props.userEmail === "prueba20262@proyteal.com";
+
+  const visibleItems = menuItems.filter(item => {
+    if (isRestricted) {
+      return ["fotos", "personal", "planificacion", "historial"].includes(item.key);
+    }
+    return true;
+  });
+
   return (
-    <IonMenu 
-      contentId={props.contentId} 
-      type="overlay" 
-      style={{ '--width': '250px' }} 
-    >
+    <IonMenu contentId={props.contentId} type="overlay" className="sidebar-menu">
       <IonHeader className="ion-no-border">
-        <IonToolbar style={{ '--background': '#004b3e', '--color': '#ffffff' }}>
-          <IonTitle style={{ fontWeight: 'bold', fontSize: '16px' }}>MENÚ</IonTitle>
+        <IonToolbar className="menu-toolbar">
+          <IonTitle className="menu-title">MENÚ EWS</IonTitle>
         </IonToolbar>
       </IonHeader>
       
-      <IonContent>
+      <IonContent className="sidebar-content">
         <IonList lines="none" className="ion-padding-top">
-          {menuItems.map((item) => (
-            <IonMenuToggle key={item.key} autoHide={false}>
-              <IonItem
-                button
-                detail={false}
-                onClick={() => props.onLinkClick(item.key)}
-                color={props.selectedKey === item.key ? "light" : ""}
-                style={{
-                  '--border-radius': '0 20px 20px 0',
-                  '--margin-end': '10px',
-                  marginBottom: '4px'
-                }}
-              >
-                <IonIcon 
-                  slot="start" 
-                  icon={item.icon} 
-                  color={props.selectedKey === item.key ? "primary" : "medium"} 
-                />
-                <IonLabel 
-                  style={{ 
-                    fontWeight: props.selectedKey === item.key ? 'bold' : 'normal',
-                    fontSize: '14px' 
-                  }}
+          {visibleItems.map((item) => {
+            const isSelected = props.selectedKey === item.key;
+            
+            return (
+              <IonMenuToggle key={item.key} autoHide={false}>
+                <IonItem
+                  button
+                  detail={false}
+                  onClick={() => props.onLinkClick(item.key)}
+                  // Aquí aplicamos las clases del archivo CSS
+                  className={`menu-item-custom ${isSelected ? 'item-selected' : ''}`}
                 >
-                  {item.name}
-                </IonLabel>
-              </IonItem>
-            </IonMenuToggle>
-          ))}
+                  <IonIcon 
+                    slot="start" 
+                    icon={item.icon} 
+                    className={`menu-icon ${isSelected ? 'icon-selected' : 'icon-default'}`} 
+                  />
+                  <IonLabel className={`menu-label ${isSelected ? 'label-selected' : ''}`}>
+                    {item.name}
+                  </IonLabel>
+                </IonItem>
+              </IonMenuToggle>
+            );
+          })}
         </IonList>
       </IonContent>
     </IonMenu>
