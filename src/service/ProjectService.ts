@@ -14,7 +14,7 @@ export class ProjectService {
     this._sp = sp;
   }
 
-public async getObras(): Promise<IObra[]> {
+  public async getObras(): Promise<IObra[]> {
     try {
       // 1. Probamos primero con una selección mínima para asegurar que la lista responde
       const items = await this._sp.web.lists.getByTitle(this._listName).items
@@ -28,7 +28,7 @@ public async getObras(): Promise<IObra[]> {
         )
         .expand("Cliente")();
 
-      console.log("Obras recibidas de SharePoint:", items); // Mira esto en la consola F12
+      console.log("Obras recibidas de SharePoint:", items);
 
       return items.map((item: any) => ({
         Id: item.Id,
@@ -43,9 +43,22 @@ public async getObras(): Promise<IObra[]> {
     }
   }
 
+  // Mantenemos esta por si la estás usando en otra parte de tu aplicación
   public async crearObra(nuevaObra: any): Promise<void> {
     await this._sp.web.lists.getByTitle(this._listName).items.add(nuevaObra);
   }
+
+  // --- NUEVAS FUNCIONES PARA TablaObras.tsx ---
+
+  public async addObra(nuevaObra: any): Promise<void> {
+    await this._sp.web.lists.getByTitle(this._listName).items.add(nuevaObra);
+  }
+
+  public async updateObra(id: number, data: any): Promise<void> {
+    await this._sp.web.lists.getByTitle(this._listName).items.getById(id).update(data);
+  }
+
+  // --------------------------------------------
 
   public async actualizarEstado(id: number, nuevoEstado: string): Promise<void> {
     await this._sp.web.lists.getByTitle(this._listName).items.getById(id).update({
