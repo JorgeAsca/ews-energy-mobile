@@ -21,13 +21,8 @@ export const ListaClientes: React.FC<IListaClientesProps> = (props) => {
   const [editandoId, setEditandoId] = React.useState<number | null>(null);
   const [hideDeleteDialog, setHideDeleteDialog] = React.useState(true);
 
-  // Formulario limpio, sin rastro de Empresa Relacionada
   const [formulario, setFormulario] = React.useState<Partial<ICliente>>({
-    Title: "", 
-    CIF: "",
-    Direccion: "",
-    Email: "",
-    Telefono: ""
+    Title: "", CIF: "", Direccion: "", Email: "", Telefono: ""
   });
 
   const cargarClientes = async () => {
@@ -47,29 +42,22 @@ export const ListaClientes: React.FC<IListaClientesProps> = (props) => {
 
   const handleGuardar = async () => {
     if (!formulario.Title) {
-      setMensaje({ texto: "El nombre del cliente es obligatorio", tipo: MessageBarType.warning });
+      setMensaje({ texto: "El nombre es obligatorio", tipo: MessageBarType.warning });
       return;
     }
     try {
       setProcesando(true);
       const service = new ClientesService(props.sp);
-      
-      const datosParaEnviar = { ...formulario };
-
       if (editandoId) {
-        await service.actualizarCliente(editandoId, datosParaEnviar);
+        await service.actualizarCliente(editandoId, formulario);
       } else {
-        await service.crearCliente(datosParaEnviar);
+        await service.crearCliente(formulario);
       }
-      
       setIsOpen(false);
       cargarClientes();
     } catch (error) {
-      setMensaje({ texto: "Error al guardar el cliente.", tipo: MessageBarType.error });
-      console.error(error);
-    } finally {
-      setProcesando(false);
-    }
+      setMensaje({ texto: "Error al guardar.", tipo: MessageBarType.error });
+    } finally { setProcesando(false); }
   };
 
   const handleEliminar = async () => {
@@ -82,10 +70,8 @@ export const ListaClientes: React.FC<IListaClientesProps> = (props) => {
       setIsOpen(false);
       cargarClientes();
     } catch (error) {
-      setMensaje({ texto: "Error al eliminar el cliente", tipo: MessageBarType.error });
-    } finally {
-      setProcesando(false);
-    }
+      setMensaje({ texto: "Error al eliminar.", tipo: MessageBarType.error });
+    } finally { setProcesando(false); }
   };
 
   const abrirEditor = (cliente?: ICliente) => {
@@ -99,117 +85,86 @@ export const ListaClientes: React.FC<IListaClientesProps> = (props) => {
     setIsOpen(true);
   };
 
-  // Tabla limpia sin la columna de Empresa Relacionada
+  // Agregamos data-label para que el CSS sepa qué etiqueta poner en móvil
   const columns: IColumn[] = [
     {
-      key: "colNombre",
-      name: "Nombre",
-      fieldName: "Title", 
-      minWidth: 150,
-      maxWidth: 250,
-      isResizable: true,
-      onRender: (item: ICliente) => <Text style={{ fontWeight: 600 }}>{item.Title}</Text>
+      key: "colNombre", name: "Nombre", fieldName: "Title", minWidth: 140, maxWidth: 200,
+      onRender: (item: ICliente) => <div data-label="Nombre:"><Text style={{ fontWeight: 600 }}>{item.Title}</Text></div>
     },
-    {
-      key: "colCIF",
-      name: "CIF",
-      fieldName: "CIF",
-      minWidth: 100,
-      maxWidth: 120,
-      isResizable: true,
+    { 
+      key: "colCIF", name: "CIF", fieldName: "CIF", minWidth: 80, maxWidth: 90,
+      onRender: (item: ICliente) => <div data-label="CIF:">{item.CIF}</div>
     },
-    {
-      key: "colTelefono",
-      name: "Teléfono",
-      fieldName: "Telefono",
-      minWidth: 100,
-      maxWidth: 120,
-      isResizable: true,
+    { 
+      key: "colTelefono", name: "Teléfono", fieldName: "Telefono", minWidth: 90, maxWidth: 110,
+      onRender: (item: ICliente) => <div data-label="Tel:">{item.Telefono}</div>
     },
-    {
-      key: "colEmail",
-      name: "Email",
-      fieldName: "Email",
-      minWidth: 150,
-      maxWidth: 200,
-      isResizable: true,
+    { 
+      key: "colEmail", name: "Email", fieldName: "Email", minWidth: 130, maxWidth: 180,
       onRender: (item: ICliente) => (
-        item.Email ? (
-            <a href={`mailto:${item.Email}`} style={{ color: '#0078d4', textDecoration: 'none' }}>
-            {item.Email}
-            </a>
-        ) : <span>-</span>
+        <div data-label="Email:">
+            {item.Email ? <a href={`mailto:${item.Email}`} style={{ color: '#0078d4', textDecoration: 'none' }}>{item.Email}</a> : "-"}
+        </div>
       )
     },
     {
-      key: "colAcciones",
-      name: "Acciones",
-      minWidth: 100,
-      maxWidth: 100,
+      key: "colAcciones", name: "Acciones", minWidth: 80, maxWidth: 80,
       onRender: (item: ICliente) => (
-        <Stack horizontal tokens={{ childrenGap: 5 }}>
-          <IconButton iconProps={{ iconName: "Edit" }} title="Editar cliente" onClick={() => abrirEditor(item)} />
-          <IconButton iconProps={{ iconName: "Delete" }} title="Eliminar cliente" onClick={() => { abrirEditor(item); setHideDeleteDialog(false); }} styles={{ root: { color: '#d13438' }, rootHovered: { color: '#a4262c' } }} />
-        </Stack>
+        <div data-label="Opciones:">
+            <Stack horizontal tokens={{ childrenGap: 5 }}>
+                <IconButton iconProps={{ iconName: "Edit" }} onClick={() => abrirEditor(item)} />
+                <IconButton iconProps={{ iconName: "Delete" }} onClick={() => { abrirEditor(item); setHideDeleteDialog(false); }} styles={{ root: { color: '#d13438' } }} />
+            </Stack>
+        </div>
       )
     }
   ];
 
   return (
     <div className={styles.container}>
-      <Stack className={styles.headerSection} horizontal horizontalAlign="space-between" verticalAlign="center" style={{ marginBottom: 20 }}>
+      <Stack className={styles.headerSection} horizontal horizontalAlign="space-between" verticalAlign="center">
         <Stack horizontal verticalAlign="center" tokens={{ childrenGap: 12 }}>
-          <Text variant="xxLarge" style={{ fontWeight: 600, color: '#323130' }}>Directorio de Clientes</Text>
-          <div style={{ backgroundColor: '#e1dfdd', padding: '2px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 600 }}>
+          <Text variant="xxLarge" style={{ fontWeight: 600 }}>Directorio de Clientes</Text>
+          <div style={{ backgroundColor: '#e1dfdd', padding: '2px 10px', borderRadius: '12px', fontSize: '12px' }}>
             {clientes.length} registrados
           </div>
         </Stack>
-        <PrimaryButton iconProps={{ iconName: "AddFriend" }} text="Nuevo Cliente" onClick={() => abrirEditor()} />
+        <PrimaryButton className={styles.btnNuevoCliente} iconProps={{ iconName: "AddFriend" }} text="Nuevo Cliente" onClick={() => abrirEditor()} />
       </Stack>
 
-      {mensaje && (
-        <MessageBar messageBarType={mensaje.tipo} onDismiss={() => setMensaje(null)} style={{ marginBottom: 20 }}>
-          {mensaje.texto}
-        </MessageBar>
-      )}
+      {mensaje && <MessageBar messageBarType={mensaje.tipo} onDismiss={() => setMensaje(null)} style={{ marginBottom: 20 }}>{mensaje.texto}</MessageBar>}
 
-      <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: '10px' }}>
-        {loading ? (
-          <Spinner size={SpinnerSize.large} label="Cargando cartera de clientes..." style={{ padding: '40px' }} />
-        ) : (
-          <DetailsList
-            items={clientes}
-            columns={columns}
-            layoutMode={DetailsListLayoutMode.justified}
-            selectionMode={SelectionMode.none}
-            styles={{ root: { overflowX: 'auto' }, headerWrapper: { '& .ms-DetailsHeader': { paddingTop: 0 } } }}
+      <div className={styles.tableContainer}>
+        {loading ? <Spinner size={SpinnerSize.large} style={{ padding: '40px' }} /> : (
+          <DetailsList 
+            items={clientes} 
+            columns={columns} 
+            layoutMode={DetailsListLayoutMode.justified} 
+            selectionMode={SelectionMode.none} 
           />
         )}
       </div>
 
       <Modal isOpen={isOpen} onDismiss={() => setIsOpen(false)} isBlocking={false}>
-        <div style={{ padding: '24px', width: '450px', maxWidth: '90vw' }}>
+        <div className={styles.modalContent}>
           <Stack horizontal horizontalAlign="space-between" verticalAlign="center">
             <Text variant="xLarge" style={{ fontWeight: 600 }}>{editandoId ? "Editar Cliente" : "Nuevo Cliente"}</Text>
             <IconButton iconProps={{ iconName: 'Cancel' }} onClick={() => setIsOpen(false)} />
           </Stack>
-          
           <Separator style={{ margin: '15px 0' }} />
-          
           <Stack tokens={{ childrenGap: 15 }}>
             <TextField label="Nombre del Cliente" value={formulario.Title} onChange={(_, v) => setFormulario({...formulario, Title: v || ""})} required />
             <Stack horizontal tokens={{ childrenGap: 10 }}>
-                <TextField label="CIF" style={{ width: '100%' }} value={formulario.CIF} onChange={(_, v) => setFormulario({...formulario, CIF: v || ""})} />
-                <TextField label="Teléfono" style={{ width: '100%' }} value={formulario.Telefono} onChange={(_, v) => setFormulario({...formulario, Telefono: v || ""})} />
+                <TextField label="CIF" style={{ flex: 1 }} value={formulario.CIF} onChange={(_, v) => setFormulario({...formulario, CIF: v || ""})} />
+                <TextField label="Teléfono" style={{ flex: 1 }} value={formulario.Telefono} onChange={(_, v) => setFormulario({...formulario, Telefono: v || ""})} />
             </Stack>
-            <TextField label="Correo Electrónico" style={{ width: '100%' }} value={formulario.Email} onChange={(_, v) => setFormulario({...formulario, Email: v || ""})} />
+            <TextField label="Correo Electrónico" value={formulario.Email} onChange={(_, v) => setFormulario({...formulario, Email: v || ""})} />
             <TextField label="Dirección" multiline rows={2} value={formulario.Direccion} onChange={(_, v) => setFormulario({...formulario, Direccion: v || ""})} />
           </Stack>
-
           <Stack horizontal tokens={{ childrenGap: 10 }} horizontalAlign="end" style={{ marginTop: '25px' }}>
             {procesando ? <Spinner size={SpinnerSize.medium} /> : (
               <>
-                <PrimaryButton text={editandoId ? "Actualizar" : "Registrar"} onClick={handleGuardar} />
+                <PrimaryButton className={styles.btnNuevoCliente} text={editandoId ? "Actualizar" : "Registrar"} onClick={handleGuardar} />
                 <DefaultButton text="Cancelar" onClick={() => setIsOpen(false)} />
               </>
             )}
@@ -218,9 +173,9 @@ export const ListaClientes: React.FC<IListaClientesProps> = (props) => {
       </Modal>
 
       <Dialog hidden={hideDeleteDialog} onDismiss={() => setHideDeleteDialog(true)} 
-        dialogContentProps={{ type: DialogType.normal, title: 'Confirmar eliminación', subText: `¿Estás seguro de que deseas eliminar al cliente ${formulario.Title}?` }}>
+        dialogContentProps={{ type: DialogType.normal, title: 'Confirmar eliminación', subText: `¿Eliminar al cliente ${formulario.Title}?` }}>
         <DialogFooter>
-          <PrimaryButton onClick={handleEliminar} text="Eliminar" styles={{ root: { backgroundColor: '#d13438', borderColor: '#d13438' }, rootHovered: { backgroundColor: '#a4262c', borderColor: '#a4262c' } }} />
+          <PrimaryButton onClick={handleEliminar} text="Eliminar" styles={{ root: { backgroundColor: '#d13438', borderColor: '#d13438' } }} />
           <DefaultButton onClick={() => setHideDeleteDialog(true)} text="Cancelar" />
         </DialogFooter>
       </Dialog>
