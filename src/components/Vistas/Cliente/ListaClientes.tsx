@@ -21,7 +21,16 @@ export const ListaClientes: React.FC<IListaClientesProps> = (props) => {
   const [editandoId, setEditandoId] = React.useState<number | null>(null);
   const [hideDeleteDialog, setHideDeleteDialog] = React.useState(true);
 
-  // Formulario limpio, sin rastro de Empresa Relacionada
+  // --- NUEVO: Estado para detectar si es móvil ---
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth <= 768);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  // -----------------------------------------------
+
   const [formulario, setFormulario] = React.useState<Partial<ICliente>>({
     Title: "", 
     CIF: "",
@@ -99,54 +108,12 @@ export const ListaClientes: React.FC<IListaClientesProps> = (props) => {
     setIsOpen(true);
   };
 
-  // Tabla limpia sin la columna de Empresa Relacionada
   const columns: IColumn[] = [
-    {
-      key: "colNombre",
-      name: "Nombre",
-      fieldName: "Title", 
-      minWidth: 150,
-      maxWidth: 250,
-      isResizable: true,
-      onRender: (item: ICliente) => <Text style={{ fontWeight: 600 }}>{item.Title}</Text>
-    },
-    {
-      key: "colCIF",
-      name: "CIF",
-      fieldName: "CIF",
-      minWidth: 100,
-      maxWidth: 120,
-      isResizable: true,
-    },
-    {
-      key: "colTelefono",
-      name: "Teléfono",
-      fieldName: "Telefono",
-      minWidth: 100,
-      maxWidth: 120,
-      isResizable: true,
-    },
-    {
-      key: "colEmail",
-      name: "Email",
-      fieldName: "Email",
-      minWidth: 150,
-      maxWidth: 200,
-      isResizable: true,
-      onRender: (item: ICliente) => (
-        item.Email ? (
-            <a href={`mailto:${item.Email}`} style={{ color: '#0078d4', textDecoration: 'none' }}>
-            {item.Email}
-            </a>
-        ) : <span>-</span>
-      )
-    },
-    {
-      key: "colAcciones",
-      name: "Acciones",
-      minWidth: 100,
-      maxWidth: 100,
-      onRender: (item: ICliente) => (
+    { key: "colNombre", name: "Nombre", fieldName: "Title", minWidth: 150, maxWidth: 250, isResizable: true, onRender: (item: ICliente) => <Text style={{ fontWeight: 600 }}>{item.Title}</Text> },
+    { key: "colCIF", name: "CIF", fieldName: "CIF", minWidth: 100, maxWidth: 120, isResizable: true },
+    { key: "colTelefono", name: "Teléfono", fieldName: "Telefono", minWidth: 100, maxWidth: 120, isResizable: true },
+    { key: "colEmail", name: "Email", fieldName: "Email", minWidth: 150, maxWidth: 200, isResizable: true, onRender: (item: ICliente) => ( item.Email ? ( <a href={`mailto:${item.Email}`} style={{ color: '#0078d4', textDecoration: 'none' }}>{item.Email}</a> ) : <span>-</span> ) },
+    { key: "colAcciones", name: "Acciones", minWidth: 100, maxWidth: 100, onRender: (item: ICliente) => (
         <Stack horizontal tokens={{ childrenGap: 5 }}>
           <IconButton iconProps={{ iconName: "Edit" }} title="Editar cliente" onClick={() => abrirEditor(item)} />
           <IconButton iconProps={{ iconName: "Delete" }} title="Eliminar cliente" onClick={() => { abrirEditor(item); setHideDeleteDialog(false); }} styles={{ root: { color: '#d13438' }, rootHovered: { color: '#a4262c' } }} />
@@ -173,10 +140,37 @@ export const ListaClientes: React.FC<IListaClientesProps> = (props) => {
         </MessageBar>
       )}
 
-      <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: '10px' }}>
-        {loading ? (
+      {/* --- RENDERIZADO CONDICIONAL: MÓVIL vs ESCRITORIO --- */}
+      {loading ? (
+        <div style={{ backgroundColor: 'white', borderRadius: '8px', padding: '10px' }}>
           <Spinner size={SpinnerSize.large} label="Cargando cartera de clientes..." style={{ padding: '40px' }} />
-        ) : (
+        </div>
+      ) : isMobile ? (
+        // Vista para Móviles (Tarjetas)
+        <div className={styles.mobileList}>
+          {clientes.map(item => (
+            <div key={item.Id} className={styles.mobileCard}>
+              <div className={styles.cardHeader}>
+                <Text style={{ fontWeight: 600, fontSize: '16px' }}>{item.Title}</Text>
+                <Stack horizontal tokens={{ childrenGap: 0 }}>
+                  <IconButton iconProps={{ iconName: "Edit" }} onClick={() => abrirEditor(item)} />
+                  <IconButton iconProps={{ iconName: "Delete" }} onClick={() => { abrirEditor(item); setHideDeleteDialog(false); }} styles={{ root: { color: '#d13438' } }} />
+                </Stack>
+              </div>
+              <div className={styles.cardInfo}>
+                <div className={styles.infoRow}><span>CIF:</span> <span>{item.CIF || '-'}</span></div>
+                <div className={styles.infoRow}><span>Teléfono:</span> <span>{item.Telefono || '-'}</span></div>
+                <div className={styles.infoRow}>
+                  <span>Email:</span> 
+                  <span>{item.Email ? <a href={`mailto:${item.Email}`} style={{textDecoration: 'none'}}>{item.Email}</a> : '-'}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        // Vista para PC/Tablet (Tabla)
+        <div style={{ backgroundColor: 'white', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', padding: '10px' }}>
           <DetailsList
             items={clientes}
             columns={columns}
@@ -184,9 +178,10 @@ export const ListaClientes: React.FC<IListaClientesProps> = (props) => {
             selectionMode={SelectionMode.none}
             styles={{ root: { overflowX: 'auto' }, headerWrapper: { '& .ms-DetailsHeader': { paddingTop: 0 } } }}
           />
-        )}
-      </div>
+        </div>
+      )}
 
+      {/* MODAL Y DIALOG SE MANTIENEN IGUAL */}
       <Modal isOpen={isOpen} onDismiss={() => setIsOpen(false)} isBlocking={false}>
         <div style={{ padding: '24px', width: '450px', maxWidth: '90vw' }}>
           <Stack horizontal horizontalAlign="space-between" verticalAlign="center">

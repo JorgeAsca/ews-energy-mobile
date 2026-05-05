@@ -5,8 +5,64 @@
   background-color: #f3f2f1; /* Fondo gris claro típico de Fluent UI */
   min-height: calc(100vh - 100px);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+  /* Reducir padding en pantallas móviles */
+  @media (max-width: 768px) {
+    padding: 12px;
+  }
 }
 
 .headerSection {
   padding-bottom: 16px;
+
+  /* Apilar el título y el botón en móviles */
+  @media (max-width: 768px) {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px;
+
+    button {
+      align-self: stretch; /* El botón de "Nuevo Cliente" ocupará el 100% del ancho */
+    }
+  }
+}
+
+/* Estilos para las tarjetas de la vista móvil */
+.mobileList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobileCard {
+  background-color: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+
+  .cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e1dfdd;
+    padding-bottom: 8px;
+  }
+
+  .cardInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    .infoRow {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      
+      span:first-child {
+        color: #605e5c;
+        font-weight: 600;
+      }
+    }
+  }
 }
