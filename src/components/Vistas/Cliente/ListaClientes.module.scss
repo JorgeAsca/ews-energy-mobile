@@ -1,68 +1,86 @@
 /* ListaClientes.module.scss */
 
 .container {
-  padding: 24px;
-  background-color: #f3f2f1; /* Fondo gris claro típico de Fluent UI */
+  padding: 12px;
+  background-color: #f3f2f1;
   min-height: calc(100vh - 100px);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
-  /* Reducir padding en pantallas móviles */
-  @media (max-width: 768px) {
-    padding: 12px;
-  }
+  overflow-x: hidden; 
 }
 
 .headerSection {
   padding-bottom: 16px;
-
-  /* Apilar el título y el botón en móviles */
-  @media (max-width: 768px) {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 16px;
-
-    button {
-      align-self: stretch; /* El botón de "Nuevo Cliente" ocupará el 100% del ancho */
-    }
-  }
-}
-
-/* Estilos para las tarjetas de la vista móvil */
-.mobileList {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.mobileCard {
+.tableContainer {
   background-color: white;
   border-radius: 8px;
-  padding: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  padding: 8px;
+  overflow: hidden; // Adiós al scroll horizontal
+}
 
-  .cardHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    border-bottom: 1px solid #e1dfdd;
-    padding-bottom: 8px;
+.btnNuevoCliente {
+  background-color: #004d3d !important;
+  border-color: #004d3d !important;
+  color: white !important;
+  
+  &:hover {
+    background-color: #00362b !important;
+    border-color: #00362b !important;
+  }
+}
+
+.modalContent {
+  padding: 20px;
+  width: 100%;
+  max-width: 450px;
+  box-sizing: border-box;
+}
+
+/* --- SOLUCIÓN PARA MÓVIL SIN SCROLL --- */
+@media (max-width: 768px) {
+  .headerSection {
+    flex-direction: column;
+    align-items: stretch !important;
+    text-align: center;
   }
 
-  .cardInfo {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  /* Forzamos a que la lista de FluentUI se comporte como bloques apilados */
+  :global(.ms-DetailsHeader) {
+    display: none; /* Escondemos los encabezados en móvil */
+  }
 
-    .infoRow {
-      display: flex;
-      justify-content: space-between;
-      font-size: 14px;
-      
-      span:first-child {
-        color: #605e5c;
-        font-weight: 600;
-      }
-    }
+  :global(.ms-DetailsRow-fields) {
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    padding: 10px 0;
+    border-bottom: 1px solid #edebe9;
+  }
+
+  :global(.ms-DetailsRow-cell) {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 4px 8px !important;
+    height: auto !important;
+    display: flex !important;
+    align-items: center;
+  }
+
+  /* Añadimos etiquetas antes de los datos para no perder contexto */
+  :global(.ms-DetailsRow-cell)::before {
+    content: attr(data-label);
+    font-weight: bold;
+    width: 80px;
+    min-width: 80px;
+    color: #605e5c;
+    font-size: 12px;
+    display: inline-block;
   }
 }
