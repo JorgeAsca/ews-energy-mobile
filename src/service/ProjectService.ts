@@ -35,7 +35,7 @@ export class ProjectService {
         Title: item.Title,
         EstadoObra: item.EstadoObra || "En Proceso",
         ProgresoReal: item.ProgresoReal || 0,
-        Cliente: item.Cliente ? { Title: item.Cliente.Title } : undefined
+        Cliente: item.Cliente ? { Id: item.Cliente.Id, Title: item.Cliente.Title } : undefined
       }));
     } catch (error) {
       console.error("Fallo crítico al pedir Obras:", error);
