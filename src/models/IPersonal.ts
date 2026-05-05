@@ -1,4 +1,4 @@
-export type RolUsuario = 'Manager' | 'Operario';
+export type RolUsuario = 'Administrador' | 'Manager' | 'Operario';
 
 export interface IPersonal {
     Id: number;
