@@ -1,137 +1,66 @@
-/* ListaMateriales.module.scss */
-
 .listaMateriales {
-  padding: 24px;
-  background-color: #f3f2f1; /* Un gris un poco más oscuro para que las tarjetas blancas destaquen */
-  min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
-  .title {
-    color: #201f1e;
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 24px;
-    display: block;
-    letter-spacing: -0.5px;
-  }
-
-  .headerStack {
-    background-color: #ffffff;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 0 2px rgba(0, 0, 0, 0.06);
-    border: none;
-    margin-bottom: 24px;
-  }
-
-  .addForm {
-    background-color: #ffffff;
-    padding: 20px 24px;
-    border-radius: 8px;
-    border: 1px solid #e1dfdd;
-    border-left: 4px solid #0078d4; /* Acento de color azul Fluent UI */
-    margin-top: 16px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-    transition: box-shadow 0.2s ease;
-
-    &:hover {
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    }
-
-    /* Contenedor de los campos */
-    :global(.ms-Stack) {
-      /* CORRECCIÓN: Alineación central para que todos los elementos (etiquetas, inputs, botones, imagen) se alineen en el mismo eje horizontal */
-      align-items: center; /* Cambiado de flex-end a center */
-      gap: 16px;
-    }
-  }
+  padding: 20px;
+  background-color: #ffffff;
 }
 
-/* Ajustes para la tabla (DetailsList) */
-:global {
-  .ms-DetailsList {
-    background-color: #ffffff;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 0 2px rgba(0, 0, 0, 0.06);
-    border: none;
-  }
-
-  /* Ajuste para que las filas respiren y tengan efecto hover */
-  .ms-DetailsRow {
-    border-bottom: 1px solid #f3f2f1;
-    min-height: 64px;
-    display: flex;
-    align-items: center;
-    transition: background-color 0.2s ease;
-
-    &:hover {
-      background-color: #f8f9fa; /* Efecto hover elegante al pasar el ratón */
-    }
-  }
-
-  /* Estilo limpio para las cabeceras de la tabla */
-  .ms-DetailsHeader {
-    background-color: #ffffff;
-    border-bottom: 2px solid #edebe9;
-    padding-top: 8px;
-    padding-bottom: 8px;
-
-    .ms-DetailsHeader-cell {
-      font-weight: 600;
-      color: #605e5c;
-      font-size: 14px;
-    }
-  }
+.title {
+  color: #004d40;
+  font-weight: 600;
+  margin-bottom: 20px;
 }
 
-/* Estilos específicos para las imágenes de los productos */
-.productImageThumbnail {
-  width: 44px;
-  height: 44px;
-  object-fit: cover;
-  border-radius: 6px;
-  border: 1px solid #e1dfdd;
+.headerStack {
+  margin-bottom: 24px;
+}
+
+.addForm {
   background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #edebe9;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.imagePreviewBig {
-  width: 100%;
-  max-height: 250px;
-  object-fit: contain;
-  border-radius: 8px;
-  background-color: #f8f9fa;
-  border: 1px solid #e1dfdd;
-}
+/* Contenedor interactivo para subir imágenes */
+.imageUploadContainer {
+  width: 40px;
+  height: 40px;
+  border: 1px dashed #a19f9d;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease-in-out;
 
-/* Responsividad para móviles */
-@media (max-width: 600px) {
-  .listaMateriales {
-    padding: 12px;
-
-    .headerStack {
-      padding: 16px;
-    }
-
-    .addForm {
-      :global(.ms-Stack) {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 12px;
-      }
-
-      /* Los campos de texto y botones ocupan todo el ancho en móvil */
-      :global(.ms-TextField), 
-      :global(.ms-Button) {
-        width: 100% !important;
-        margin-bottom: 8px;
-      }
-    }
+  &:hover {
+    border-color: #004d40;
+    background-color: #f3f2f1;
   }
 
-  /* Hacemos que la tabla permita scroll horizontal si hay muchas columnas */
-  :global(.ms-DetailsList-contentWrapper) {
-    overflow-x: auto;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+/* Miniatura de la tabla */
+.imageThumbnail {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e1dfdd;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.actionIcon {
+  color: #004d40;
+  &:hover {
+    color: #00251a;
+    background-color: #e6f2f0;
   }
 }

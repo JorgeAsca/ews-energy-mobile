@@ -2,7 +2,7 @@ import { SPFI } from "@pnp/sp";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
-import "@pnp/sp/attachments"; // NUEVO: Importación crítica para manejar imágenes adjuntas
+import "@pnp/sp/attachments"; 
 import { IMaterial } from '../models/IMaterial';
 
 export class StockService {
@@ -14,7 +14,6 @@ export class StockService {
     }
 
     public async getInventario(): Promise<IMaterial[]> {
-        // Añadimos "AttachmentFiles/ServerRelativeUrl" a la selección
         const items = await this._sp.web.lists.getByTitle(this._listName)
             .items
             .select("*", "AttachmentFiles", "AttachmentFiles/ServerRelativeUrl")
@@ -26,12 +25,10 @@ export class StockService {
             Categoria: item.Categor_x00ed_a || "General",
             StockActual: item.StockActual || 0,
             StockMinimo: item.StockM_x00ed_nimo || 0,
-            // Dependiendo de tu versión de PnP, los adjuntos pueden venir directos o dentro de .results
             AttachmentFiles: item.AttachmentFiles?.results || item.AttachmentFiles || []
         } as IMaterial));
     }
 
-    // NUEVO: Se añade el parámetro 'archivo' que enviamos desde el componente React
     public async crearMaterial(material: any, archivo: File | null = null): Promise<void> {
         // 1. Creamos el elemento en la lista
         const resultado: any = await this._sp.web.lists.getByTitle(this._listName).items.add({
@@ -41,10 +38,10 @@ export class StockService {
             StockM_x00ed_nimo: material.StockMinimo
         });
 
-        // 2. Extraemos el ID del nuevo material de forma segura (dependiendo de la versión, viene en .data.Id o directo en .Id)
+        // 2. Extraemos el ID del nuevo material
         const nuevoId = resultado.data ? resultado.data.Id : resultado.Id;
 
-        // 3. Si hay un archivo y obtuvimos el ID, lo buscamos explícitamente y subimos el adjunto
+        // 3. Si hay un archivo, lo subimos
         if (archivo && nuevoId) {
             await this._sp.web.lists.getByTitle(this._listName)
                 .items.getById(nuevoId)
@@ -52,9 +49,11 @@ export class StockService {
         }
     }
 
-    public async editarMaterial(id: number, material: any): Promise<void> {
+    // AÑADIDO: El tercer parámetro 'archivo' para recibir la nueva imagen desde React
+    public async editarMaterial(id: number, material: any, archivo: File | null = null): Promise<void> {
         const item = this._sp.web.lists.getByTitle(this._listName).items.getById(id);
         
+        // 1. Actualizamos los datos de texto
         await item.update({
             Title: material.Title,
             Categor_x00ed_a: material.Categoria || material.Categor_x00ed_a, 
@@ -62,9 +61,18 @@ export class StockService {
             StockM_x00ed_nimo: material.StockMinimo || material.StockM_x00ed_nimo
         });
 
-        // NUEVO: Si en el panel de edición subieron una foto nueva, la añadimos a los adjuntos
-        if (material.archivoNuevo) {
-            await item.attachmentFiles.add(material.archivoNuevo.name, material.archivoNuevo);
+        // 2. Si nos han pasado una foto nueva, gestionamos los adjuntos
+        if (archivo) {
+            // MEJORA: Borramos la foto antigua (si existe) para no acumular basura
+            const adjuntosActuales = await item.attachmentFiles();
+            if (adjuntosActuales && adjuntosActuales.length > 0) {
+                for (const adjunto of adjuntosActuales) {
+                    await item.attachmentFiles.getByName(adjunto.FileName).delete();
+                }
+            }
+
+            // Subimos la nueva foto (que ya viene con el timestamp para evitar conflictos)
+            await item.attachmentFiles.add(archivo.name, archivo);
         }
     }
 
