@@ -10,4 +10,5 @@ export interface IAsignacion {
     EstadoProgreso: number;
     FechaFinReal?: Date;
     Comentarios?: string;
+    Created?: string;
 }

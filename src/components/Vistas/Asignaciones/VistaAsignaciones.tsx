@@ -120,24 +120,19 @@ export const VistaAsignaciones: React.FC<IVistaAsignacionesProps> = (props) => {
 
     const asignacionesAgrupadas = React.useMemo(() => {
         const agrupador: { [key: number]: IAsignacion[] } = {};
-        
-        // 1. Registramos todas las obras con un array vacío para que siempre se muestre la tarjeta
-        data.obras.forEach(obra => {
-            if (obra.Id) {
-                agrupador[obra.Id] = [];
-            }
-        });
-
-        // 2. Llenamos esos arrays con las asignaciones reales
+        data.obras.forEach(obra => { if (obra.Id) agrupador[obra.Id] = []; });
         data.asignaciones.forEach(asig => {
-            if (!agrupador[asig.ObraId]) {
-                agrupador[asig.ObraId] = [];
-            }
+            if (!agrupador[asig.ObraId]) agrupador[asig.ObraId] = [];
             agrupador[asig.ObraId].push(asig);
         });
-
         return agrupador;
     }, [data.asignaciones, data.obras]);
+
+    const formatearFecha = (fechaStr: any) => {
+        if (!fechaStr) return "N/A";
+        const fecha = new Date(fechaStr);
+        return `${fecha.getDate()}/${fecha.getMonth() + 1}/${fecha.getFullYear()}`;
+    };
 
     if (loading) return (
         <div className={styles.loader}>
@@ -186,7 +181,7 @@ export const VistaAsignaciones: React.FC<IVistaAsignacionesProps> = (props) => {
                     
                     <Stack horizontal verticalAlign="end" tokens={{ childrenGap: 15 }} wrap>
                         <DatePicker
-                            label="Fecha de finalización"
+                            label="Día de asistencia (Calendario)"
                             className={styles.datePicker}
                             value={seleccion.fechaFin}
                             onSelectDate={(date) => setSeleccion({ ...seleccion, fechaFin: date || new Date() })}
@@ -218,18 +213,24 @@ export const VistaAsignaciones: React.FC<IVistaAsignacionesProps> = (props) => {
                                 </div>
                                 
                                 <div className={styles.personalContainer}>
-                                    
                                     {listaAsig.length === 0 ? (
-                                        <Text style={{ display: 'block', color: '#888', fontStyle: 'italic', padding: '10px 0', fontSize: '13px' }}>
-                                            Sin personal asignado actualmente.
-                                        </Text>
+                                        <Text className={styles.noAsigText}>Sin personal asignado actualmente.</Text>
                                     ) : (
                                         listaAsig.map(asig => (
                                             <div key={asig.Id} className={styles.personaRow}>
                                                 <Persona
                                                     text={getNombrePersonal(asig.PersonalId)}
-                                                    secondaryText={asig.FechaFinPrevista ? `Hasta: ${new Date(asig.FechaFinPrevista).toLocaleDateString()}` : "Fecha no especificada"}
-                                                    size={PersonaSize.size32}
+                                                    size={PersonaSize.size48}
+                                                    onRenderSecondaryText={() => (
+                                                        <Stack>
+                                                            <Text variant="small" style={{ color: '#605e5c' }}>
+                                                                Asignado: {formatearFecha(asig.Created)}
+                                                            </Text>
+                                                            <Text variant="small" style={{ color: '#004b3e', fontWeight: 'bold' }}>
+                                                                Programado: {formatearFecha(asig.FechaFinPrevista)}
+                                                            </Text>
+                                                        </Stack>
+                                                    )}
                                                 />
                                                 <IconButton
                                                     iconProps={{ iconName: "Cancel" }}

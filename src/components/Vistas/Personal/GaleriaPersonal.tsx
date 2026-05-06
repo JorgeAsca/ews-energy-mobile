@@ -6,11 +6,11 @@ import {
   Dialog, DialogType, DialogFooter, Modal
 } from "@fluentui/react";
 import { PersonalService } from "../../../service/PersonalService";
-import { IPersonal } from "../../../models/IPersonal";
+import { UserService } from "../../../service/UserService"; // Importamos UserService
+import { IPersonal, RolUsuario } from "../../../models/IPersonal";
 import { SPFI } from "@pnp/sp";
 import styles from "./GaleriaPersonal.module.scss";
 
-// Shimmer para carga estética
 const PersonaShimmer = () => (
   <div className={styles.cardEmpleadoShimmer}>
     <Stack horizontalAlign="center" tokens={{ childrenGap: 15 }}>
@@ -29,13 +29,13 @@ interface IGaleriaPersonalProps { sp: SPFI; }
 export const GaleriaPersonal: React.FC<IGaleriaPersonalProps> = (props) => {
   const [personal, setPersonal] = React.useState<IPersonal[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [userRol, setUserRol] = React.useState<RolUsuario>('Operario' as any); // Estado para el rol
   const [mensaje, setMensaje] = React.useState<{ texto: string; tipo: MessageBarType } | null>(null);
   const [isOpen, setIsOpen] = React.useState(false);
   const [procesando, setProcesando] = React.useState(false);
   const [editandoId, setEditandoId] = React.useState<number | null>(null);
   const [hideDeleteDialog, setHideDeleteDialog] = React.useState(true);
 
-  // Ajustado a 'Email' para coincidir con tu PersonalService.ts
   const [formulario, setFormulario] = React.useState<Partial<IPersonal>>({
     NombreyApellido: "",
     Email: "",
@@ -43,22 +43,33 @@ export const GaleriaPersonal: React.FC<IGaleriaPersonalProps> = (props) => {
     Rol: "Operario" as any
   });
 
-  const cargarPersonal = async () => {
+  // Verificamos el rol y cargamos datos al iniciar
+  const inicializarComponente = async () => {
     try {
       setLoading(true);
-      const service = new PersonalService(props.sp);
-      const data = await service.getPersonal();
+      const uService = new UserService(props.sp);
+      const pService = new PersonalService(props.sp);
+      
+      const [rol, data] = await Promise.all([
+        uService.getRolActual(),
+        pService.getPersonal()
+      ]);
+
+      setUserRol(rol);
       setPersonal(data);
     } catch (error) {
-      setMensaje({ texto: "Error al cargar personal", tipo: MessageBarType.error });
+      setMensaje({ texto: "Error al cargar la información", tipo: MessageBarType.error });
     } finally {
       setLoading(false);
     }
   };
 
-  React.useEffect(() => { cargarPersonal(); }, [props.sp]);
+  React.useEffect(() => { inicializarComponente(); }, [props.sp]);
+
+  const esAdmin = userRol === 'Administrador';
 
   const handleGuardar = async () => {
+    if (!esAdmin) return; // Seguridad extra
     if (!formulario.NombreyApellido || !formulario.Email) {
       setMensaje({ texto: "Nombre y Correo son obligatorios", tipo: MessageBarType.warning });
       return;
@@ -66,16 +77,13 @@ export const GaleriaPersonal: React.FC<IGaleriaPersonalProps> = (props) => {
     try {
       setProcesando(true);
       const service = new PersonalService(props.sp);
-      
-      // Llamadas a los métodos corregidos según tu servicio
       if (editandoId) {
         await service.actualizarTrabajador(editandoId, formulario);
       } else {
         await service.crearTrabajador(formulario);
       }
-      
       setIsOpen(false);
-      cargarPersonal();
+      inicializarComponente();
     } catch (error) {
       setMensaje({ texto: "Error al procesar", tipo: MessageBarType.error });
     } finally {
@@ -84,17 +92,14 @@ export const GaleriaPersonal: React.FC<IGaleriaPersonalProps> = (props) => {
   };
 
   const handleEliminar = async () => {
-    if (!editandoId) return;
+    if (!editandoId || !esAdmin) return;
     try {
       setProcesando(true);
       const service = new PersonalService(props.sp);
-      
-      // Método corregido según tu servicio
       await service.eliminarTrabajador(editandoId);
-      
       setHideDeleteDialog(true);
       setIsOpen(false);
-      cargarPersonal();
+      inicializarComponente();
     } catch (error) {
       setMensaje({ texto: "Error al eliminar", tipo: MessageBarType.error });
     } finally {
@@ -103,6 +108,7 @@ export const GaleriaPersonal: React.FC<IGaleriaPersonalProps> = (props) => {
   };
 
   const abrirEditor = (empleado?: IPersonal) => {
+    if (!esAdmin) return; // Solo admin abre el editor
     if (empleado) {
       setEditandoId(empleado.Id);
       setFormulario(empleado);
@@ -120,12 +126,16 @@ export const GaleriaPersonal: React.FC<IGaleriaPersonalProps> = (props) => {
           <Text variant="xxLarge" className={styles.tituloPrincipal}>Nuestro Equipo</Text>
           <div className={styles.countBadge}>{personal.length} miembros</div>
         </Stack>
-        <PrimaryButton 
-          iconProps={{ iconName: "AddFriend" }} 
-          text="Añadir Miembro" 
-          onClick={() => abrirEditor()}
-          className={styles.btnNuevo}
-        />
+        
+        {/* Solo mostramos el botón si es Administrador */}
+        {esAdmin && (
+          <PrimaryButton 
+            iconProps={{ iconName: "AddFriend" }} 
+            text="Añadir Miembro" 
+            onClick={() => abrirEditor()}
+            className={styles.btnNuevo}
+          />
+        )}
       </Stack>
 
       {mensaje && (
@@ -140,14 +150,17 @@ export const GaleriaPersonal: React.FC<IGaleriaPersonalProps> = (props) => {
         ) : (
           personal.map((empleado) => (
             <div key={empleado.Id} className={styles.cardEmpleado}>
-              <IconButton 
-                iconProps={{ iconName: 'Edit' }} 
-                className={styles.editIcon} 
-                onClick={() => abrirEditor(empleado)} 
-              />
+              {/* El icono de edición solo aparece para Administradores */}
+              {esAdmin && (
+                <IconButton 
+                  iconProps={{ iconName: 'Edit' }} 
+                  className={styles.editIcon} 
+                  onClick={() => abrirEditor(empleado)} 
+                />
+              )}
               <Stack horizontalAlign="center" tokens={{ childrenGap: 8 }}>
                 <Persona
-                  imageUrl={empleado.FotoPerfil} // Incluido por si hay URL disponible
+                  imageUrl={empleado.FotoPerfil}
                   text={empleado.NombreyApellido}
                   size={PersonaSize.size100}
                   hidePersonaDetails
@@ -176,7 +189,6 @@ export const GaleriaPersonal: React.FC<IGaleriaPersonalProps> = (props) => {
         )}
       </div>
 
-      {/* Modal Mantenida con tu lógica de Formulario */}
       <Modal isOpen={isOpen} onDismiss={() => setIsOpen(false)} isBlocking={false} containerClassName={styles.modalFlotante}>
         <div className={styles.modalContent}>
           <div className={styles.modalHeader}>

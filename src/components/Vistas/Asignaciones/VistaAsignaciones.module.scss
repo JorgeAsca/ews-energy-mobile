@@ -42,6 +42,14 @@ $blanco: #ffffff;
   display: block;
 }
 
+.noAsigText {
+  display: block; 
+  color: #888; 
+  font-style: italic; 
+  padding: 10px 0; 
+  font-size: 13px;
+}
+
 /* --- FORMULARIO SUPERIOR --- */
 .formContainer {
   background-color: $blanco;
@@ -137,7 +145,7 @@ $blanco: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
+  padding: 12px 0;
   border-bottom: 1px solid #f9f9f9;
 
   &:last-child {
