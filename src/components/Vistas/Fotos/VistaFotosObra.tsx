@@ -219,6 +219,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
       (fotos.length === 0 && fotosPrevias.length === 0)
     )
       return;
+
     setSubiendo(true);
     try {
       const resumenHoras = personalSeleccionado
@@ -233,11 +234,11 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
           ? `${comentarios}\n\n[Horas registradas: ${resumenHoras}]`
           : comentarios;
 
-      // Unimos todas las fotos (previas y finales) para subirlas al reporte
       const todasLasFotos = [...fotosPrevias, ...fotos];
+      const urlsSubidas: string[] = [];
 
       for (const fotoObj of todasLasFotos) {
-        await services.photos.subirFotoProyecto(
+        const resultado = await services.photos.subirFotoProyecto(
           fotoObj.File,
           obraSeleccionada.Title,
           {
@@ -247,7 +248,22 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
             comentarios: comentariosFinales,
           },
         );
+
+        urlsSubidas.push(resultado.ServerRelativeUrl);
       }
+
+      const horasTotales = personalSeleccionado.reduce((acc, id) => {
+        return acc + (horasPorPersonal[id] || 0);
+      }, 0);
+
+      // Convertimos horas a jornadas (1 jornada = 8 horas)
+      const jornadasADescontar = horasTotales / 8;
+
+      // Solo llamamos al servicio si hay jornadas que descontar
+      if (jornadasADescontar > 0) {
+        await services.proyectos.descontarJornadasObra(obraSeleccionada.Id, jornadasADescontar);
+      }
+
       setMensajeExito(true);
       setTimeout(() => {
         setMensajeExito(false);
@@ -256,6 +272,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
         setComentarios("");
         setPaso(1);
       }, 3000);
+
     } catch (error) {
       console.error("Error al enviar reporte:", error);
     } finally {
