@@ -52,7 +52,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
     const [personalObra, setPersonalObra] = React.useState<IPersonal[]>([]);
     const [personalSeleccionado, setPersonalSeleccionado] = React.useState<number[]>([]);
     const [horasPorPersonal, setHorasPorPersonal] = React.useState<Record<number, number>>({});
-    
+
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const fileInputPreviasRef = React.useRef<HTMLInputElement>(null);
     const [fotos, setFotos] = React.useState<any[]>([]);
@@ -120,7 +120,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
         setFotosPrevias([]);
         setPersonalSeleccionado([]);
         setHorasPorPersonal({});
-        setPaso(2); 
+        setPaso(2);
     };
 
     const handleTogglePersonal = (id: number, isChecked: boolean) => {
@@ -262,7 +262,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
 
                         <div className={styles.infoObraSection}>
                             <Text block style={{ marginBottom: 10, fontWeight: '600' }}>Ubicación y Mapa Interactivo</Text>
-                            
+
                             {/* NUEVO MAPA INTERACTIVO (IFRAME) */}
                             <div style={{ width: '100%', height: '320px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e1dfdd', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
                                 <iframe
@@ -275,10 +275,10 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                                     src={urlMapaIframe}
                                 ></iframe>
                             </div>
-                            
+
                             {/* BOTÓN PARA ABRIR EN APP EXTERNA */}
-                            <ActionButton 
-                                iconProps={{ iconName: 'CompassNW' }} 
+                            <ActionButton
+                                iconProps={{ iconName: 'CompassNW' }}
                                 onClick={() => window.open(urlMapsExterno, '_blank')}
                                 style={{ marginTop: '8px', color: '#004b3e' }}
                             >
@@ -305,7 +305,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                     <section className={styles.stepSection}>
                         <Text variant="xLarge" className={styles.stepTitle}>Estado Previo 📸</Text>
                         <Text block style={{ marginBottom: 16, color: '#666' }}>Captura el estado actual antes de comenzar:</Text>
-                        
+
                         <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} ref={fileInputPreviasRef} onChange={handleFileChangePrevias} />
 
                         <div className={styles.uploadZone} onClick={() => fileInputPreviasRef.current?.click()}>
@@ -334,12 +334,12 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
 
                         <Stack horizontal tokens={{ childrenGap: 12 }} style={{ marginTop: 24 }}>
                             <DefaultButton text="Atrás" onClick={() => setPaso(2)} styles={ewsDefaultButtonStyles} style={{ flex: 1 }} />
-                            <PrimaryButton 
-                                text="Gestionar Personal" 
-                                onClick={() => setPaso(4)} 
-                                styles={ewsPrimaryButtonStyles} 
-                                style={{ flex: 2 }} 
-                                disabled={fotosPrevias.length === 0} 
+                            <PrimaryButton
+                                text="Gestionar Personal"
+                                onClick={() => setPaso(4)}
+                                styles={ewsPrimaryButtonStyles}
+                                style={{ flex: 2 }}
+                                disabled={fotosPrevias.length === 0}
                             />
                         </Stack>
                     </section>
@@ -349,7 +349,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                 {paso === 4 && (
                     <section className={styles.stepSection}>
                         <Text variant="xLarge" className={styles.stepTitle}>Personal Presente 👷🏽</Text>
-                        
+
                         <div className={styles.personalList}>
                             {personalObra.length === 0 ? (
                                 <MessageBar messageBarType={MessageBarType.info}>No hay más personal sugerido. Puedes continuar.</MessageBar>
@@ -366,8 +366,16 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                                             />
                                             {isSelected && (
                                                 <div style={{ marginTop: 10 }}>
-                                                    <Text variant="small">Horas: <strong>{horas}h</strong></Text>
-                                                    <Slider min={0} max={8} step={0.5} value={horas} onChange={(v) => setHorasPorPersonal(prev => ({ ...prev, [persona.Id]: v }))} />
+                                                    <Text variant="small">Horas asignadas: <strong>{horas}h</strong></Text>
+                                                    <Slider
+                                                        min={0}
+                                                        max={8}
+                                                        step={0.5}
+                                                        value={horas}
+                                                        onChange={(v) => setHorasPorPersonal(prev => ({ ...prev, [persona.Id]: v }))}
+                                                        /* 👇 AQUÍ ESTÁ LA MAGIA PARA EL PORCENTAJE 👇 */
+                                                        valueFormat={(value: number) => `${Math.round((value / 8) * 100)}%`}
+                                                    />
                                                 </div>
                                             )}
                                         </div>
@@ -397,11 +405,11 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                                 <ActionButton iconProps={{ iconName: 'DocumentSearch' }} className={styles.docItem}>Normas_Seguridad_EWS.pdf</ActionButton>
                             </div>
                         </div>
-                        
+
                         <Separator />
-                        
+
                         <Text block style={{ marginBottom: 16, marginTop: 16, color: '#666' }}>Captura el resultado final del trabajo:</Text>
-                        
+
                         <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} ref={fileInputRef} onChange={handleFileChange} />
 
                         <div className={styles.uploadZone} onClick={() => fileInputRef.current?.click()}>
@@ -431,7 +439,7 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                             <PrimaryButton
                                 text={subiendo ? "Enviando..." : "Finalizar Reporte"}
                                 onClick={enviarReporte}
-                                disabled={fotos.length === 0 || subiendo} 
+                                disabled={fotos.length === 0 || subiendo}
                                 styles={ewsPrimaryButtonStyles}
                                 style={{ flex: 2 }}
                             />

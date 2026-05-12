@@ -128,3 +128,24 @@ $rojo-error: #d13438;
   border: none !important;
   &:hover { background-color: #a4262c !important; }
 }
+.btnEws {
+  background-color: $verde-oscuro !important;
+  border-color: $verde-oscuro !important;
+  border-radius: 4px !important;
+
+  &:hover {
+    background-color: darken($verde-oscuro, 5%) !important;
+    border-color: darken($verde-oscuro, 5%) !important;
+  }
+
+  &:active {
+    background-color: darken($verde-oscuro, 10%) !important;
+    border-color: darken($verde-oscuro, 10%) !important;
+  }
+
+  &:disabled {
+    background-color: #cccccc !important;
+    border-color: #cccccc !important;
+    color: #666666 !important;
+  }
+}
