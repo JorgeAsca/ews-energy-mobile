@@ -16,7 +16,6 @@ import { VistaPlanificacion } from './components/Vistas/Planificacion/VistaPlani
 import { VistaAsignaciones } from './components/Vistas/Asignaciones/VistaAsignaciones';
 import { VistaFotosObra } from './components/Vistas/Fotos/VistaFotosObra';
 import { VistaHistorialTarjetas } from './components/Vistas/historial/VistaHistorialReportes';
-// NUEVA IMPORTACIÓN: Tu vista de Clientes
 import { ListaClientes } from './components/Vistas/Cliente/ListaClientes';
 import { Queryable } from "@pnp/queryable";
 import { PublicClientApplication } from "@azure/msal-browser";
@@ -48,6 +47,19 @@ const msalConfig = {
 
 const msalInstance = new PublicClientApplication(msalConfig);
 
+// Lista centralizada de cuentas con acceso restringido (operarios)
+const correosOperarios = [
+  "prueba20262@proyteal.com",
+  "avalero@ewindsol.es",
+  "alopez@ewindsol.es",
+  "aroca@ewindsol.es",
+  "acomenarejo@ewindsol.es",
+  "javisegura@ewindsol.es",
+  "roberto@ewindsol.es",
+  "jjflores@ewindsol.es",
+  "aguevara@ewindsol.es"
+];
+
 const App: React.FC = () => {
   const [sp, setSp] = useState<SPFI | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -75,7 +87,8 @@ const App: React.FC = () => {
     if (accounts.length > 0) {
       const email = accounts[0].username.toLowerCase();
       setUserEmail(email);
-      if (email === "prueba20262@proyteal.com") {
+      // Redirección inicial a 'fotos' si el usuario está en la lista de operarios
+      if (correosOperarios.includes(email)) {
         setActiveView("fotos");
       }
     }
@@ -202,7 +215,8 @@ const App: React.FC = () => {
     );
   }
 
-  const isRestricted = userEmail === "prueba20262@proyteal.com";
+  // Verifica si el usuario actual está en el array de cuentas restringidas
+  const isRestricted = correosOperarios.includes(userEmail);
 
   return (
     <IonApp>
