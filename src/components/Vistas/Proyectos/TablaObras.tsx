@@ -159,10 +159,9 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
     setIsDetailOpen(true);
   };
 
-  // --- LÓGICA DE FILTRADO CORREGIDA (PROTECCIÓN CONTRA NULOS) ---
   const filteredObras = React.useMemo(() => {
     return obras.filter((obra) => {
-      const tituloSeguro = obra.Title || ""; // Si es null, lo convierte en string vacío
+      const tituloSeguro = obra.Title || ""; 
       const filtroSeguro = filterText || "";
 
       const matchesName = tituloSeguro.toLowerCase().includes(filtroSeguro.toLowerCase());
@@ -177,7 +176,6 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
       return matchesName && matchesEstado && matchesFecha;
     });
   }, [obras, filterText, filterEstado, filterFecha]);
-  // --------------------------------------------------------------
 
   const columns: IColumn[] = [
     {
@@ -255,7 +253,7 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
         <DetailsList items={filteredObras} columns={columns} layoutMode={DetailsListLayoutMode.justified} selectionMode={SelectionMode.none} />
       </div>
 
-      {/* MODAL: REGISTRAR NUEVA OBRA ACTUALIZADA */}
+      {/* MODAL: REGISTRAR NUEVA OBRA */}
       <Modal isOpen={isOpenNueva} onDismiss={() => setIsOpenNueva(false)} containerClassName={styles.modalContainer}>
         <div className={styles.modalContent}>
           <div className={styles.modalHeader}>
@@ -273,9 +271,26 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
               onChange={(_, opt) => setNuevoClienteId(opt?.key as number)} 
             />
 
-            <TextField label="Dirección / Ubicación" value={nuevaUbicacion} onChange={(_, val) => setNuevaUbicacion(val || "")} />
+            <TextField 
+              label="Dirección / Ubicación" 
+              value={nuevaUbicacion} 
+              onChange={(_, val) => setNuevaUbicacion(val || "")} 
+              placeholder="Ej: Calle Alcalá 12, Madrid"
+            />
             
-            {/* NUEVO CAMPO: ESTADO */}
+            {/* MAPA VISUAL DE CREACIÓN */}
+            {nuevaUbicacion && nuevaUbicacion.length > 3 && (
+              <div style={{ width: '100%', height: '180px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e1dfdd' }}>
+                <iframe
+                    width="100%"
+                    height="100%"
+                    frameBorder="0"
+                    scrolling="no"
+                    src={`https://maps.google.com/maps?q=${encodeURIComponent(nuevaUbicacion)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
+                ></iframe>
+              </div>
+            )}
+
             <Dropdown 
               label="Estado Inicial" 
               options={modalEstadoOptions} 
@@ -305,6 +320,20 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
                 <TextField label="Nombre de la Obra" value={editNombre} onChange={(_, v) => setEditNombre(v || "")} />
                 <Dropdown label="Cliente" options={clientesOptions} selectedKey={editClienteId} onChange={(_, opt) => setEditClienteId(opt?.key as number)} />
                 <TextField label="Ubicación" value={editUbicacion} onChange={(_, v) => setEditUbicacion(v || "")} />
+                
+                {/* MAPA VISUAL DE EDICIÓN */}
+                {editUbicacion && editUbicacion.length > 3 && (
+                  <div style={{ width: '100%', height: '180px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e1dfdd', marginTop: -10 }}>
+                    <iframe
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        scrolling="no"
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(editUbicacion)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
+                    ></iframe>
+                  </div>
+                )}
+
                 <Dropdown label="Estado" options={modalEstadoOptions} selectedKey={editEstado} onChange={(_, opt) => setEditEstado(opt?.key as string)} />
                 <TextField label="Jornadas Totales" type="number" value={editJornadas} onChange={(_, v) => setEditJornadas(v || "0")} />
               </>
@@ -314,6 +343,20 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
                   <Text variant="large" block style={{ fontWeight: 600 }}>{selectedObra?.Title}</Text>
                   <Text variant="medium" style={{ color: "#605e5c" }}>{selectedObra?.DireccionObra || "Sin dirección registrada"}</Text>
                 </div>
+                
+                {/* MAPA VISUAL DE DETALLES */}
+                {selectedObra?.DireccionObra && (
+                   <div style={{ width: '100%', height: '150px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e1dfdd' }}>
+                    <iframe
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        scrolling="no"
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(selectedObra.DireccionObra)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                    ></iframe>
+                  </div>
+                )}
+
                 <Stack horizontal horizontalAlign="space-between">
                   <Text style={{ fontWeight: 600 }}>Estado Actual:</Text>
                   <span className={`${styles.badge} ${selectedObra?.EstadoObra === "En Proceso" ? styles.badgeProcess : ""}`}>

@@ -39,7 +39,11 @@ export class PhotoService {
         await this._sp.web.folders.addUsingPath(folderPath);
       }
 
-      const fileName = `${Date.now()}_${metadatos.operarioId}_${file.name}`;
+      // Extraemos el nombre original sin la extensión
+const nombreSinExtension = file.name.substring(0, file.name.lastIndexOf('.')) || "foto_camara";
+
+// Forzamos que SIEMPRE termine en .jpg
+const fileName = `${Date.now()}_${metadatos.operarioId}_${nombreSinExtension}.jpg`;
 
       // 2. SUBIDA SEGURA DE ARCHIVOS
       // Cambiamos addChunked por addUsingPath con Overwrite en true para evitar el error de [object Object]
