@@ -37,7 +37,6 @@ const estadoOptions: IDropdownOption[] = [
   { key: "Pendiente", text: "Pendiente" },
 ];
 
-
 const modalEstadoOptions = estadoOptions.filter(opt => opt.key !== "all");
 
 export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
@@ -160,10 +159,15 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
     setIsDetailOpen(true);
   };
 
+  // --- LÓGICA DE FILTRADO CORREGIDA (PROTECCIÓN CONTRA NULOS) ---
   const filteredObras = React.useMemo(() => {
     return obras.filter((obra) => {
-      const matchesName = obra.Title.toLowerCase().includes(filterText.toLowerCase());
+      const tituloSeguro = obra.Title || ""; // Si es null, lo convierte en string vacío
+      const filtroSeguro = filterText || "";
+
+      const matchesName = tituloSeguro.toLowerCase().includes(filtroSeguro.toLowerCase());
       const matchesEstado = filterEstado === "all" || obra.EstadoObra === filterEstado;
+      
       let matchesFecha = true;
       if (filterFecha && (obra as any).Created) {
         const fechaObra = new Date((obra as any).Created).toLocaleDateString();
@@ -173,6 +177,7 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
       return matchesName && matchesEstado && matchesFecha;
     });
   }, [obras, filterText, filterEstado, filterFecha]);
+  // --------------------------------------------------------------
 
   const columns: IColumn[] = [
     {
@@ -270,7 +275,7 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
 
             <TextField label="Dirección / Ubicación" value={nuevaUbicacion} onChange={(_, val) => setNuevaUbicacion(val || "")} />
             
-            {/* NUEO CAMPO: ESTADO */}
+            {/* NUEVO CAMPO: ESTADO */}
             <Dropdown 
               label="Estado Inicial" 
               options={modalEstadoOptions} 
