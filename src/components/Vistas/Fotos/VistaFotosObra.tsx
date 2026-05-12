@@ -275,8 +275,6 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                                     src={urlMapaIframe}
                                 ></iframe>
                             </div>
-
-                            {/* BOTÓN PARA ABRIR EN APP EXTERNA */}
                             <ActionButton
                                 iconProps={{ iconName: 'CompassNW' }}
                                 onClick={() => window.open(urlMapsExterno, '_blank')}
@@ -344,8 +342,6 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                         </Stack>
                     </section>
                 )}
-
-                {/* PASO 4: SELECCIÓN DE PERSONAL */}
                 {paso === 4 && (
                     <section className={styles.stepSection}>
                         <Text variant="xLarge" className={styles.stepTitle}>Personal Presente 👷🏽</Text>
@@ -373,7 +369,6 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                                                         step={0.5}
                                                         value={horas}
                                                         onChange={(v) => setHorasPorPersonal(prev => ({ ...prev, [persona.Id]: v }))}
-                                                        /* 👇 AQUÍ ESTÁ LA MAGIA PARA EL PORCENTAJE 👇 */
                                                         valueFormat={(value: number) => `${Math.round((value / 8) * 100)}%`}
                                                     />
                                                 </div>
@@ -391,7 +386,6 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
                     </section>
                 )}
 
-                {/* PASO 5: FOTOS FINAL Y REFERENCIA DE PLANOS */}
                 {paso === 5 && (
                     <section className={styles.stepSection}>
                         <Text variant="xLarge" className={styles.stepTitle}>Fotos del Final 📸</Text>

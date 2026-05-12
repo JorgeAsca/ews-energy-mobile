@@ -73,4 +73,18 @@ const fileName = `${Date.now()}_${metadatos.operarioId}_${nombreSinExtension}.jp
       throw error;
     }
   }
+
+  public async getFotosPorObra(obraId: number): Promise<any[]> {
+    try {
+      const fotos = await this._sp.web.lists.getByTitle(this._metadataListName).items
+        .filter(`ObraId eq ${obraId}`)
+        .select("Id", "Title", "UrlFoto", "Comentarios", "FechaRegistro")
+        .orderBy("FechaRegistro", false)(); // false para que salgan las más recientes primero
+      return fotos;
+    } catch (error) {
+      console.error("Error al obtener fotos de la obra:", error);
+      return [];
+    }
+  }
+
 }

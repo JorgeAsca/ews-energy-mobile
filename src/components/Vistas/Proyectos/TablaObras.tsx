@@ -22,6 +22,7 @@ import {
 } from "@fluentui/react";
 import { ProjectService } from "../../../service/ProjectService";
 import { ClientesService } from "../../../service/ClientesService";
+import { PhotoService } from "../../../service/PhotoService"; // NUEVA IMPORTACIÓN
 import { SPFI } from "@pnp/sp";
 import { IObra } from "../../../models/IObra";
 import styles from "./TablaObras.module.scss";
@@ -65,6 +66,10 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
   const [editEstado, setEditEstado] = React.useState("");
   const [editJornadas, setEditJornadas] = React.useState("");
   const [editClienteId, setEditClienteId] = React.useState<number | undefined>(undefined);
+
+  // NUEVOS ESTADOS PARA LAS FOTOS
+  const [fotosObra, setFotosObra] = React.useState<any[]>([]);
+  const [loadingFotos, setLoadingFotos] = React.useState(false);
 
   const cargarDatos = async () => {
     try {
@@ -148,7 +153,7 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
     }
   };
 
-  const abrirDetalle = (obra: IObra) => {
+  const abrirDetalle = async (obra: IObra) => {
     setSelectedObra(obra);
     setEditNombre(obra.Title);
     setEditUbicacion(obra.DireccionObra || "");
@@ -157,6 +162,20 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
     setEditClienteId((obra as any).Cliente?.Id || undefined);
     setIsEditing(false);
     setIsDetailOpen(true);
+
+    if (obra.Id) {
+      setLoadingFotos(true);
+      setFotosObra([]); // Limpiar la vista anterior
+      try {
+        const photoService = new PhotoService(props.sp);
+        const fotos = await photoService.getFotosPorObra(obra.Id);
+        setFotosObra(fotos);
+      } catch (error) {
+        console.error("Error al cargar fotos:", error);
+      } finally {
+        setLoadingFotos(false);
+      }
+    }
   };
 
   const filteredObras = React.useMemo(() => {
@@ -258,6 +277,7 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
       <div className={styles.tableWrapper}>
         <DetailsList items={filteredObras} columns={columns} layoutMode={DetailsListLayoutMode.justified} selectionMode={SelectionMode.none} />
       </div>
+      
       <Modal isOpen={isOpenNueva} onDismiss={() => setIsOpenNueva(false)} containerClassName={styles.modalContainer}>
         <div className={styles.modalContent}>
           <div className={styles.modalHeader}>
@@ -324,7 +344,6 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
                 <Dropdown label="Cliente" options={clientesOptions} selectedKey={editClienteId} onChange={(_, opt) => setEditClienteId(opt?.key as number)} />
                 <TextField label="Ubicación" value={editUbicacion} onChange={(_, v) => setEditUbicacion(v || "")} />
 
-                {/* MAPA VISUAL DE EDICIÓN */}
                 {editUbicacion && editUbicacion.length > 3 && (
                   <div style={{ width: '100%', height: '180px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e1dfdd', marginTop: -10 }}>
                     <iframe
@@ -347,7 +366,6 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
                   <Text variant="medium" style={{ color: "#605e5c" }}>{selectedObra?.DireccionObra || "Sin dirección registrada"}</Text>
                 </div>
 
-                {/* MAPA VISUAL DE DETALLES */}
                 {selectedObra?.DireccionObra && (
                   <div style={{ width: '100%', height: '150px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e1dfdd' }}>
                     <iframe
@@ -372,6 +390,30 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
                   <Text>Cliente: <strong>{(selectedObra as any)?.Cliente?.Title || "Sin cliente"}</strong></Text>
                   <Text>Jornadas Totales: <strong>{(selectedObra as any)?.JornadasTotales || 0}</strong></Text>
                 </Stack>
+                <Separator />
+                <Stack tokens={{ childrenGap: 5 }}>
+                  <Text variant="medium" style={{ fontWeight: 600 }}>Registro Fotográfico</Text>
+                  {loadingFotos ? (
+                    <Spinner size={SpinnerSize.small} label="Cargando fotos de la obra..." />
+                  ) : fotosObra.length > 0 ? (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "10px", marginTop: "10px" }}>
+                      {fotosObra.map((foto, index) => (
+                        <div key={index} style={{ border: "1px solid #edebe9", borderRadius: "8px", overflow: "hidden", height: "100px" }}>
+                          <img 
+                            src={foto.UrlFoto?.Url || foto.UrlFoto} 
+                            alt={foto.Title} 
+                            style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer" }} 
+                            onClick={() => window.open(foto.UrlFoto?.Url || foto.UrlFoto, "_blank")}
+                            title={foto.Comentarios || "Foto de obra"}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <Text variant="small" style={{ color: "#605e5c" }}>No hay fotos registradas para esta obra todavía.</Text>
+                  )}
+                </Stack>
+
               </Stack>
             )}
           </Stack>
