@@ -57,30 +57,20 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
   const [loading, setLoading] = React.useState(true);
   const [subiendo, setSubiendo] = React.useState(false);
 
-  const [currentUser, setCurrentUser] = React.useState<{
-    nombre: string;
-    email: string;
-    id: number;
-  } | null>(null);
-  const [obraSeleccionada, setObraSeleccionada] = React.useState<IObra | null>(
-    null,
-  );
-  const [personalObra, setPersonalObra] = React.useState<IPersonal[]>([]);
-  const [personalSeleccionado, setPersonalSeleccionado] = React.useState<
-    number[]
-  >([]);
-  const [horasPorPersonal, setHorasPorPersonal] = React.useState<
-    Record<number, number>
-  >({});
-
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const fileInputPreviasRef = React.useRef<HTMLInputElement>(null);
-  const [fotos, setFotos] = React.useState<any[]>([]);
-  const [fotosPrevias, setFotosPrevias] = React.useState<any[]>([]);
-  const [comentarios, setComentarios] = React.useState("");
-  const [mensajeExito, setMensajeExito] = React.useState(false);
-  const [procesandoCaptura, setProcesandoCaptura] = React.useState(false);
-  const [procesandoPrevias, setProcesandoPrevias] = React.useState(false);
+    const [currentUser, setCurrentUser] = React.useState<{ nombre: string, email: string, id: number } | null>(null);
+    const [obraSeleccionada, setObraSeleccionada] = React.useState<IObra | null>(null);
+    const [personalObra, setPersonalObra] = React.useState<IPersonal[]>([]);
+    const [personalSeleccionado, setPersonalSeleccionado] = React.useState<number[]>([]);
+    const [horasPorPersonal, setHorasPorPersonal] = React.useState<Record<number, number>>({});
+    
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const fileInputPreviasRef = React.useRef<HTMLInputElement>(null);
+    const [fotos, setFotos] = React.useState<any[]>([]);
+    const [fotosPrevias, setFotosPrevias] = React.useState<any[]>([]);
+    const [comentarios, setComentarios] = React.useState("");
+    const [mensajeExito, setMensajeExito] = React.useState(false);
+    const [procesandoCaptura, setProcesandoCaptura] = React.useState(false);
+    const [procesandoPrevias, setProcesandoPrevias] = React.useState(false);
 
   const [data, setData] = React.useState<{
     obras: IObra[];
@@ -133,22 +123,22 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
     cargarDatos();
   }, [props.sp]);
 
-  const handleSeleccionarObra = (obra: IObra) => {
-    setObraSeleccionada(obra);
-    if (currentUser) {
-      const sugeridos = services.asignaciones.getCuadrillaSugerida(
-        obra.Id,
-        currentUser.id,
-        data.asignaciones,
-        data.personal,
-      );
-      setPersonalObra(sugeridos);
-    }
-    setFotosPrevias([]);
-    setPersonalSeleccionado([]);
-    setHorasPorPersonal({});
-    setPaso(2);
-  };
+    const handleSeleccionarObra = (obra: IObra) => {
+        setObraSeleccionada(obra);
+        if (currentUser) {
+            const sugeridos = services.asignaciones.getCuadrillaSugerida(
+                obra.Id,
+                currentUser.id,
+                data.asignaciones,
+                data.personal
+            );
+            setPersonalObra(sugeridos);
+        }
+        setFotosPrevias([]);
+        setPersonalSeleccionado([]);
+        setHorasPorPersonal({});
+        setPaso(2); 
+    };
 
   const handleTogglePersonal = (id: number, isChecked: boolean) => {
     if (isChecked) {
@@ -334,41 +324,30 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
               {obraSeleccionada?.Title}
             </Text>
 
-            <div className={styles.infoObraSection}>
-              <Text block style={{ marginBottom: 10, fontWeight: "600" }}>
-                Ubicación y Mapa Interactivo
-              </Text>
-
-              {/* NUEVO MAPA INTERACTIVO (IFRAME) */}
-              <div
-                style={{
-                  width: "100%",
-                  height: "320px",
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  border: "1px solid #e1dfdd",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                }}
-              >
-                <iframe
-                  width="100%"
-                  height="100%"
-                  frameBorder="0"
-                  scrolling="no"
-                  marginHeight={0}
-                  marginWidth={0}
-                  src={urlMapaIframe}
-                ></iframe>
-              </div>
-
-              {/* BOTÓN PARA ABRIR EN APP EXTERNA */}
-              <ActionButton
-                iconProps={{ iconName: "CompassNW" }}
-                onClick={() => window.open(urlMapsExterno, "_blank")}
-                style={{ marginTop: "8px", color: "#004b3e" }}
-              >
-                Abrir en Google Maps
-              </ActionButton>
+                        <div className={styles.infoObraSection}>
+                            <Text block style={{ marginBottom: 10, fontWeight: '600' }}>Ubicación y Mapa Interactivo</Text>
+                            
+                            {/* NUEVO MAPA INTERACTIVO (IFRAME) */}
+                            <div style={{ width: '100%', height: '320px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e1dfdd', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
+                                <iframe
+                                    width="100%"
+                                    height="100%"
+                                    frameBorder="0"
+                                    scrolling="no"
+                                    marginHeight={0}
+                                    marginWidth={0}
+                                    src={urlMapaIframe}
+                                ></iframe>
+                            </div>
+                            
+                            {/* BOTÓN PARA ABRIR EN APP EXTERNA */}
+                            <ActionButton 
+                                iconProps={{ iconName: 'CompassNW' }} 
+                                onClick={() => window.open(urlMapsExterno, '_blank')}
+                                style={{ marginTop: '8px', color: '#004b3e' }}
+                            >
+                                Abrir en Google Maps
+                            </ActionButton>
 
               <Text
                 block
@@ -419,40 +398,22 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
           </section>
         )}
 
-        {/* PASO 3: TOMAR FOTOS PREVIAS (CON BLOQUEO) */}
-        {paso === 3 && (
-          <section className={styles.stepSection}>
-            <Text variant="xLarge" className={styles.stepTitle}>
-              Estado Previo 📸
-            </Text>
-            <Text block style={{ marginBottom: 16, color: "#666" }}>
-              Captura el estado actual antes de comenzar:
-            </Text>
+                {/* PASO 3: TOMAR FOTOS PREVIAS (CON BLOQUEO) */}
+                {paso === 3 && (
+                    <section className={styles.stepSection}>
+                        <Text variant="xLarge" className={styles.stepTitle}>Estado Previo 📸</Text>
+                        <Text block style={{ marginBottom: 16, color: '#666' }}>Captura el estado actual antes de comenzar:</Text>
+                        
+                        <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} ref={fileInputPreviasRef} onChange={handleFileChangePrevias} />
 
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              style={{ display: "none" }}
-              ref={fileInputPreviasRef}
-              onChange={handleFileChangePrevias}
-            />
-
-            <div
-              className={styles.uploadZone}
-              onClick={() => fileInputPreviasRef.current?.click()}
-            >
-              {procesandoPrevias ? (
-                <Spinner />
-              ) : (
-                <>
-                  <Icon iconName="Camera" className={styles.uploadIcon} />
-                  <p className={styles.uploadTitle}>
-                    Toca para tomar foto previa
-                  </p>
-                </>
-              )}
-            </div>
+                        <div className={styles.uploadZone} onClick={() => fileInputPreviasRef.current?.click()}>
+                            {procesandoPrevias ? <Spinner /> : (
+                                <>
+                                    <Icon iconName="Camera" className={styles.uploadIcon} />
+                                    <p className={styles.uploadTitle}>Toca para tomar foto previa</p>
+                                </>
+                            )}
+                        </div>
 
             <div className={styles.previewContainer}>
               {fotosPrevias.map((f, i) => (
@@ -489,89 +450,49 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
               </Text>
             )}
 
-            <Stack
-              horizontal
-              tokens={{ childrenGap: 12 }}
-              style={{ marginTop: 24 }}
-            >
-              <DefaultButton
-                text="Atrás"
-                onClick={() => setPaso(2)}
-                styles={ewsDefaultButtonStyles}
-                style={{ flex: 1 }}
-              />
-              <PrimaryButton
-                text="Gestionar Personal"
-                onClick={() => setPaso(4)}
-                styles={ewsPrimaryButtonStyles}
-                style={{ flex: 2 }}
-                disabled={fotosPrevias.length === 0}
-              />
-            </Stack>
-          </section>
-        )}
+                        <Stack horizontal tokens={{ childrenGap: 12 }} style={{ marginTop: 24 }}>
+                            <DefaultButton text="Atrás" onClick={() => setPaso(2)} styles={ewsDefaultButtonStyles} style={{ flex: 1 }} />
+                            <PrimaryButton 
+                                text="Gestionar Personal" 
+                                onClick={() => setPaso(4)} 
+                                styles={ewsPrimaryButtonStyles} 
+                                style={{ flex: 2 }} 
+                                disabled={fotosPrevias.length === 0} 
+                            />
+                        </Stack>
+                    </section>
+                )}
 
-        {/* PASO 4: SELECCIÓN DE PERSONAL */}
-        {paso === 4 && (
-          <section className={styles.stepSection}>
-            <Text variant="xLarge" className={styles.stepTitle}>
-              Personal Presente 👷🏽
-            </Text>
-
-            <div className={styles.personalList}>
-              {personalObra.length === 0 ? (
-                <MessageBar messageBarType={MessageBarType.info}>
-                  No hay más personal sugerido. Puedes continuar.
-                </MessageBar>
-              ) : (
-                personalObra.map((persona) => {
-                  const isSelected = personalSeleccionado.includes(persona.Id);
-                  const horas = horasPorPersonal[persona.Id] || 0;
-                  return (
-                    <div
-                      key={persona.Id}
-                      className={styles.personalItemContainer}
-                      style={{
-                        marginBottom: 15,
-                        padding: 10,
-                        border: "1px solid #eee",
-                        borderRadius: 8,
-                      }}
-                    >
-                      <Checkbox
-                        label={persona.NombreyApellido || "Operario"}
-                        checked={isSelected}
-                        onChange={(_, isChecked) =>
-                          handleTogglePersonal(persona.Id, !!isChecked)
-                        }
-                      />
-                      {isSelected && (
-                        <div style={{ marginTop: 10 }}>
-                          <Text variant="small">
-                            Horas: <strong>{horas}h</strong>
-                          </Text>
-                          <Slider
-                            min={0}
-                            max={8}
-                            step={0.5}
-                            value={horas}
-                            valueFormat={(value) =>
-                              `${Math.round((value / 8) * 100)}%`
-                            }
-                            onChange={(v) =>
-                              setHorasPorPersonal((prev) => ({
-                                ...prev,
-                                [persona.Id]: v,
-                              }))
-                            }
-                          />
+                {/* PASO 4: SELECCIÓN DE PERSONAL */}
+                {paso === 4 && (
+                    <section className={styles.stepSection}>
+                        <Text variant="xLarge" className={styles.stepTitle}>Personal Presente 👷🏽</Text>
+                        
+                        <div className={styles.personalList}>
+                            {personalObra.length === 0 ? (
+                                <MessageBar messageBarType={MessageBarType.info}>No hay más personal sugerido. Puedes continuar.</MessageBar>
+                            ) : (
+                                personalObra.map(persona => {
+                                    const isSelected = personalSeleccionado.includes(persona.Id);
+                                    const horas = horasPorPersonal[persona.Id] || 0;
+                                    return (
+                                        <div key={persona.Id} className={styles.personalItemContainer} style={{ marginBottom: 15, padding: 10, border: '1px solid #eee', borderRadius: 8 }}>
+                                            <Checkbox
+                                                label={persona.NombreyApellido || "Operario"}
+                                                checked={isSelected}
+                                                onChange={(_, isChecked) => handleTogglePersonal(persona.Id, !!isChecked)}
+                                            />
+                                            {isSelected && (
+                                                <div style={{ marginTop: 10 }}>
+                                                    <Text variant="small">Horas: <strong>{horas}h</strong></Text>
+                                                    <Slider min={0} max={8} step={0.5} value={horas} onChange={(v) => setHorasPorPersonal(prev => ({ ...prev, [persona.Id]: v }))} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
-                      )}
-                    </div>
-                  );
-                })
-              )}
-            </div>
 
             <Stack
               horizontal
@@ -594,76 +515,35 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
           </section>
         )}
 
-        {/* PASO 5: FOTOS FINAL Y REFERENCIA DE PLANOS */}
-        {paso === 5 && (
-          <section className={styles.stepSection}>
-            <Text variant="xLarge" className={styles.stepTitle}>
-              Fotos del Final 📸
-            </Text>
+                {/* PASO 5: FOTOS FINAL Y REFERENCIA DE PLANOS */}
+                {paso === 5 && (
+                    <section className={styles.stepSection}>
+                        <Text variant="xLarge" className={styles.stepTitle}>Fotos del Final 📸</Text>
 
-            {/* PLANOS EN EL PASO FINAL TAMBIÉN */}
-            <div
-              className={styles.infoObraSection}
-              style={{ marginBottom: 20 }}
-            >
-              <Text block style={{ marginBottom: 10, fontWeight: "600" }}>
-                Planos y Documentación (Referencia)
-              </Text>
-              <div className={styles.docList}>
-                <ActionButton
-                  iconProps={{ iconName: "PDF" }}
-                  className={styles.docItem}
-                >
-                  Plano_Instalacion_General.pdf
-                </ActionButton>
-                <ActionButton
-                  iconProps={{ iconName: "PDF" }}
-                  className={styles.docItem}
-                >
-                  Esquema_Electrico_V1.pdf
-                </ActionButton>
-                <ActionButton
-                  iconProps={{ iconName: "DocumentSearch" }}
-                  className={styles.docItem}
-                >
-                  Normas_Seguridad_EWS.pdf
-                </ActionButton>
-              </div>
-            </div>
+                        {/* PLANOS EN EL PASO FINAL TAMBIÉN */}
+                        <div className={styles.infoObraSection} style={{ marginBottom: 20 }}>
+                            <Text block style={{ marginBottom: 10, fontWeight: '600' }}>Planos y Documentación (Referencia)</Text>
+                            <div className={styles.docList}>
+                                <ActionButton iconProps={{ iconName: 'PDF' }} className={styles.docItem}>Plano_Instalacion_General.pdf</ActionButton>
+                                <ActionButton iconProps={{ iconName: 'PDF' }} className={styles.docItem}>Esquema_Electrico_V1.pdf</ActionButton>
+                                <ActionButton iconProps={{ iconName: 'DocumentSearch' }} className={styles.docItem}>Normas_Seguridad_EWS.pdf</ActionButton>
+                            </div>
+                        </div>
+                        
+                        <Separator />
+                        
+                        <Text block style={{ marginBottom: 16, marginTop: 16, color: '#666' }}>Captura el resultado final del trabajo:</Text>
+                        
+                        <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} ref={fileInputRef} onChange={handleFileChange} />
 
-            <Separator />
-
-            <Text
-              block
-              style={{ marginBottom: 16, marginTop: 16, color: "#666" }}
-            >
-              Captura el resultado final del trabajo:
-            </Text>
-
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              style={{ display: "none" }}
-              ref={fileInputRef}
-              onChange={handleFileChange}
-            />
-
-            <div
-              className={styles.uploadZone}
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {procesandoCaptura ? (
-                <Spinner />
-              ) : (
-                <>
-                  <Icon iconName="Camera" className={styles.uploadIcon} />
-                  <p className={styles.uploadTitle}>
-                    Toca para tomar foto final
-                  </p>
-                </>
-              )}
-            </div>
+                        <div className={styles.uploadZone} onClick={() => fileInputRef.current?.click()}>
+                            {procesandoCaptura ? <Spinner /> : (
+                                <>
+                                    <Icon iconName="Camera" className={styles.uploadIcon} />
+                                    <p className={styles.uploadTitle}>Toca para tomar foto final</p>
+                                </>
+                            )}
+                        </div>
 
             <div className={styles.previewContainer}>
               {fotos.map((f, i) => (
@@ -684,42 +564,23 @@ export const VistaFotosObra: React.FC<IVistaFotosObraProps> = (props) => {
               ))}
             </div>
 
-            <TextField
-              label="Comentarios finales"
-              multiline
-              rows={3}
-              value={comentarios}
-              onChange={(_, v) => setComentarios(v || "")}
-            />
+                        <TextField label="Comentarios finales" multiline rows={3} value={comentarios} onChange={(_, v) => setComentarios(v || "")} />
 
-            {mensajeExito && (
-              <MessageBar messageBarType={MessageBarType.success}>
-                Reporte enviado con éxito.
-              </MessageBar>
-            )}
+                        {mensajeExito && <MessageBar messageBarType={MessageBarType.success}>Reporte enviado con éxito.</MessageBar>}
 
-            <Stack
-              horizontal
-              tokens={{ childrenGap: 12 }}
-              style={{ marginTop: 24 }}
-            >
-              <DefaultButton
-                text="Atrás"
-                onClick={() => setPaso(4)}
-                styles={ewsDefaultButtonStyles}
-                style={{ flex: 1 }}
-              />
-              <PrimaryButton
-                text={subiendo ? "Enviando..." : "Finalizar Reporte"}
-                onClick={enviarReporte}
-                disabled={fotos.length === 0 || subiendo}
-                styles={ewsPrimaryButtonStyles}
-                style={{ flex: 2 }}
-              />
-            </Stack>
-          </section>
-        )}
-      </main>
-    </div>
-  );
+                        <Stack horizontal tokens={{ childrenGap: 12 }} style={{ marginTop: 24 }}>
+                            <DefaultButton text="Atrás" onClick={() => setPaso(4)} styles={ewsDefaultButtonStyles} style={{ flex: 1 }} />
+                            <PrimaryButton
+                                text={subiendo ? "Enviando..." : "Finalizar Reporte"}
+                                onClick={enviarReporte}
+                                disabled={fotos.length === 0 || subiendo} 
+                                styles={ewsPrimaryButtonStyles}
+                                style={{ flex: 2 }}
+                            />
+                        </Stack>
+                    </section>
+                )}
+            </main>
+        </div>
+    );
 };
