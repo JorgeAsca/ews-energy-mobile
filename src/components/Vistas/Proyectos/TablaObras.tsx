@@ -20,12 +20,28 @@ import {
   DatePicker,
   Link,
 } from "@fluentui/react";
+// Importaciones para el mapa interactivo
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
 import { ProjectService } from "../../../service/ProjectService";
 import { ClientesService } from "../../../service/ClientesService";
-import { PhotoService } from "../../../service/PhotoService"; // NUEVA IMPORTACIÓN
+import { PhotoService } from "../../../service/PhotoService";
 import { SPFI } from "@pnp/sp";
 import { IObra } from "../../../models/IObra";
 import styles from "./TablaObras.module.scss";
+
+// Corrección de iconos de Leaflet (necesario en React)
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+});
+L.Marker.prototype.options.icon = DefaultIcon;
 
 interface ITablaObrasProps {
   sp: SPFI;
@@ -40,34 +56,74 @@ const estadoOptions: IDropdownOption[] = [
 
 const modalEstadoOptions = estadoOptions.filter(opt => opt.key !== "all");
 
+// Componente auxiliar para manejar clics y geocodificación inversa
+const LocationPicker: React.FC<{ 
+    position: [number, number], 
+    setPosition: (pos: [number, number]) => void,
+    setAddress: (addr: string) => void 
+}> = ({ position, setPosition, setAddress }) => {
+    
+    const map = useMap();
+
+    useMapEvents({
+        click: async (e) => {
+            const { lat, lng } = e.latlng;
+            setPosition([lat, lng]);
+            map.flyTo(e.latlng, map.getZoom());
+
+            // Geocodificación inversa gratuita con Nominatim (OpenStreetMap)
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                const data = await response.json();
+                if (data.display_name) {
+                    setAddress(data.display_name);
+                }
+            } catch (error) {
+                console.error("Error obteniendo dirección:", error);
+            }
+        },
+    });
+
+    return <Marker position={position} /> ;
+};
+
+// Componente para centrar el mapa cuando cambia la posición externamente
+const ChangeView = ({ center }: { center: [number, number] }) => {
+    const map = useMap();
+    map.setView(center);
+    return null;
+};
+
 export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
   const [obras, setObras] = React.useState<IObra[]>([]);
   const [loading, setLoading] = React.useState(true);
   const hasLoaded = React.useRef(false);
-
   const [clientesOptions, setClientesOptions] = React.useState<IDropdownOption[]>([]);
 
   const [filterText, setFilterText] = React.useState("");
   const [filterEstado, setFilterEstado] = React.useState<string>("all");
   const [filterFecha, setFilterFecha] = React.useState<Date | undefined>(undefined);
+  
+  // ESTADOS NUEVA OBRA
   const [isOpenNueva, setIsOpenNueva] = React.useState(false);
   const [nuevoNombre, setNuevoNombre] = React.useState("");
   const [nuevaUbicacion, setNuevaUbicacion] = React.useState("");
   const [nuevoEstado, setNuevoEstado] = React.useState<string>("Pendiente");
   const [jornadasPropuestas, setJornadasPropuestas] = React.useState<string>("0");
   const [nuevoClienteId, setNuevoClienteId] = React.useState<number | undefined>(undefined);
+  const [newCoords, setNewCoords] = React.useState<[number, number]>([40.4167, -3.7037]); // Madrid por defecto
 
+  // ESTADOS EDICIÓN/DETALLE
   const [selectedObra, setSelectedObra] = React.useState<IObra | null>(null);
   const [isDetailOpen, setIsDetailOpen] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
-
   const [editNombre, setEditNombre] = React.useState("");
   const [editUbicacion, setEditUbicacion] = React.useState("");
   const [editEstado, setEditEstado] = React.useState("");
   const [editJornadas, setEditJornadas] = React.useState("");
   const [editClienteId, setEditClienteId] = React.useState<number | undefined>(undefined);
+  const [editCoords, setEditCoords] = React.useState<[number, number]>([40.4167, -3.7037]);
 
-  // NUEVOS ESTADOS PARA LAS FOTOS
   const [fotosObra, setFotosObra] = React.useState<any[]>([]);
   const [loadingFotos, setLoadingFotos] = React.useState(false);
 
@@ -76,19 +132,12 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
       setLoading(true);
       const projectService = new ProjectService(props.sp);
       const clientesService = new ClientesService(props.sp);
-
       const [dataObras, dataClientes] = await Promise.all([
         projectService.getObras(),
         clientesService.getClientes()
       ]);
-
       setObras(dataObras);
-      const opcionesClientes = dataClientes.map((c: any) => ({
-        key: c.Id,
-        text: c.Title
-      }));
-      setClientesOptions(opcionesClientes);
-
+      setClientesOptions(dataClientes.map((c: any) => ({ key: c.Id, text: c.Title })));
     } catch (error) {
       console.error("Error al cargar datos:", error);
     } finally {
@@ -103,11 +152,23 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
     }
   }, []);
 
+  // Función para buscar coordenadas cuando el usuario escribe una dirección
+  const buscarDireccion = async (addr: string, isEdit: boolean) => {
+    if (addr.length < 4) return;
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}&limit=1`);
+        const data = await response.json();
+        if (data && data.length > 0) {
+            const pos: [number, number] = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+            isEdit ? setEditCoords(pos) : setNewCoords(pos);
+        }
+    } catch (e) { console.error(e); }
+  };
+
   const guardarNuevaObra = async () => {
     try {
       setLoading(true);
       const projectService = new ProjectService(props.sp);
-
       await projectService.addObra({
         Title: nuevoNombre,
         DireccionObra: nuevaUbicacion,
@@ -115,24 +176,15 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
         EstadoObra: nuevoEstado,
         ClienteId: nuevoClienteId
       });
-
       await cargarDatos();
       setIsOpenNueva(false);
-
       setNuevoNombre("");
       setNuevaUbicacion("");
-      setNuevoEstado("Pendiente");
-      setJornadasPropuestas("0");
-      setNuevoClienteId(undefined);
-    } catch (error) {
-      console.error("Error al guardar la nueva obra:", error);
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { console.error(error); } finally { setLoading(false); }
   };
 
   const guardarCambiosObra = async () => {
-    if (!selectedObra || !selectedObra.Id) return;
+    if (!selectedObra?.Id) return;
     try {
       setLoading(true);
       const projectService = new ProjectService(props.sp);
@@ -146,11 +198,7 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
       await cargarDatos();
       setIsEditing(false);
       setIsDetailOpen(false);
-    } catch (error) {
-      console.error("Error al actualizar la obra:", error);
-    } finally {
-      setLoading(false);
-    }
+    } catch (error) { console.error(error); } finally { setLoading(false); }
   };
 
   const abrirDetalle = async (obra: IObra) => {
@@ -162,35 +210,27 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
     setEditClienteId((obra as any).Cliente?.Id || undefined);
     setIsEditing(false);
     setIsDetailOpen(true);
+    
+    if(obra.DireccionObra) buscarDireccion(obra.DireccionObra, true);
 
     if (obra.Id) {
       setLoadingFotos(true);
-      setFotosObra([]); // Limpiar la vista anterior
+      setFotosObra([]);
       try {
         const photoService = new PhotoService(props.sp);
         const fotos = await photoService.getFotosPorObra(obra.Id);
         setFotosObra(fotos);
-      } catch (error) {
-        console.error("Error al cargar fotos:", error);
-      } finally {
-        setLoadingFotos(false);
-      }
+      } catch (error) { console.error(error); } finally { setLoadingFotos(false); }
     }
   };
 
   const filteredObras = React.useMemo(() => {
     return obras.filter((obra) => {
-      const tituloSeguro = obra.Title || "";
-      const filtroSeguro = filterText || "";
-
-      const matchesName = tituloSeguro.toLowerCase().includes(filtroSeguro.toLowerCase());
+      const matchesName = (obra.Title || "").toLowerCase().includes(filterText.toLowerCase());
       const matchesEstado = filterEstado === "all" || obra.EstadoObra === filterEstado;
-
       let matchesFecha = true;
       if (filterFecha && (obra as any).Created) {
-        const fechaObra = new Date((obra as any).Created).toLocaleDateString();
-        const fechaFiltro = filterFecha.toLocaleDateString();
-        matchesFecha = fechaObra === fechaFiltro;
+        matchesFecha = new Date((obra as any).Created).toLocaleDateString() === filterFecha.toLocaleDateString();
       }
       return matchesName && matchesEstado && matchesFecha;
     });
@@ -202,10 +242,9 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
       name: "Nombre de la Obra",
       fieldName: "Title",
       minWidth: 200,
-      maxWidth: 300,
       onRender: (item: IObra) => (
         <Stack>
-          <Link onClick={() => abrirDetalle(item)} styles={{ root: { textAlign: "left", textDecoration: "none" } }}>
+          <Link onClick={() => abrirDetalle(item)} styles={{ root: { textDecoration: "none" } }}>
             <Text variant="mediumPlus" block style={{ fontWeight: 600, color: "#004d40" }}>{item.Title}</Text>
           </Link>
           <Text variant="small" style={{ color: "#605e5c" }}>{item.DireccionObra || "Sin ubicación"}</Text>
@@ -217,7 +256,6 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
       name: "Estado",
       fieldName: "EstadoObra",
       minWidth: 100,
-      maxWidth: 120,
       onRender: (item: IObra) => (
         <span className={`${styles.badge} ${item.EstadoObra === "En Proceso" ? styles.badgeProcess : ""}`}>
           {item.EstadoObra || "Pendiente"}
@@ -244,9 +282,7 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
       key: "col4",
       name: "Acciones",
       minWidth: 50,
-      onRender: (item: IObra) => (
-        <IconButton iconProps={{ iconName: "Info" }} title="Ver detalles" onClick={() => abrirDetalle(item)} />
-      ),
+      onRender: (item: IObra) => <IconButton iconProps={{ iconName: "Info" }} onClick={() => abrirDetalle(item)} />,
     },
   ];
 
@@ -257,11 +293,7 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
           <Text className={styles.tituloPrincipal}>Gestión de Proyectos</Text>
           <Text>Supervisa el avance y detalles de las obras activas.</Text>
         </Stack>
-        <PrimaryButton
-          iconProps={{ iconName: "Add" }}
-          onClick={() => setIsOpenNueva(true)}
-          className={styles.btnEws}
-        >
+        <PrimaryButton iconProps={{ iconName: "Add" }} onClick={() => setIsOpenNueva(true)} className={styles.btnEws}>
           Nueva Obra
         </PrimaryButton>
       </Stack>
@@ -278,6 +310,7 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
         <DetailsList items={filteredObras} columns={columns} layoutMode={DetailsListLayoutMode.justified} selectionMode={SelectionMode.none} />
       </div>
       
+      {/* MODAL NUEVA OBRA */}
       <Modal isOpen={isOpenNueva} onDismiss={() => setIsOpenNueva(false)} containerClassName={styles.modalContainer}>
         <div className={styles.modalContent}>
           <div className={styles.modalHeader}>
@@ -286,41 +319,27 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
           </div>
           <Stack tokens={{ childrenGap: 15 }} style={{ marginTop: 20 }}>
             <TextField label="Nombre del Proyecto" value={nuevoNombre} onChange={(_, val) => setNuevoNombre(val || "")} required />
-
-            <Dropdown
-              label="Cliente"
-              placeholder="Selecciona un cliente"
-              options={clientesOptions}
-              selectedKey={nuevoClienteId}
-              onChange={(_, opt) => setNuevoClienteId(opt?.key as number)}
+            <Dropdown label="Cliente" options={clientesOptions} selectedKey={nuevoClienteId} onChange={(_, opt) => setNuevoClienteId(opt?.key as number)} />
+            
+            <TextField 
+                label="Dirección / Ubicación" 
+                value={nuevaUbicacion} 
+                onChange={(_, val) => {
+                    setNuevaUbicacion(val || "");
+                    buscarDireccion(val || "", false);
+                }} 
+                placeholder="Escribe o selecciona en el mapa"
             />
 
-            <TextField
-              label="Dirección / Ubicación"
-              value={nuevaUbicacion}
-              onChange={(_, val) => setNuevaUbicacion(val || "")}
-              placeholder="Ej: Calle Alcalá 12, Madrid"
-            />
+            <div style={{ width: '100%', height: '250px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e1dfdd' }}>
+                <MapContainer center={newCoords} zoom={13} style={{ height: '100%', width: '100%' }}>
+                    <ChangeView center={newCoords} />
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <LocationPicker position={newCoords} setPosition={setNewCoords} setAddress={setNuevaUbicacion} />
+                </MapContainer>
+            </div>
 
-            {nuevaUbicacion && nuevaUbicacion.length > 3 && (
-              <div style={{ width: '100%', height: '180px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e1dfdd' }}>
-                <iframe
-                  width="100%"
-                  height="100%"
-                  frameBorder="0"
-                  scrolling="no"
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(nuevaUbicacion)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
-                ></iframe>
-              </div>
-            )}
-
-            <Dropdown
-              label="Estado Inicial"
-              options={modalEstadoOptions}
-              selectedKey={nuevoEstado}
-              onChange={(_, opt) => setNuevoEstado(opt?.key as string)}
-            />
-
+            <Dropdown label="Estado Inicial" options={modalEstadoOptions} selectedKey={nuevoEstado} onChange={(_, opt) => setNuevoEstado(opt?.key as string)} />
             <TextField label="Jornadas Propuestas" type="number" value={jornadasPropuestas} onChange={(_, val) => setJornadasPropuestas(val || "0")} />
           </Stack>
           <Stack horizontal horizontalAlign="end" tokens={{ childrenGap: 10 }} style={{ marginTop: 25 }}>
@@ -330,7 +349,7 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
         </div>
       </Modal>
 
-      {/* MODAL: DETALLE / EDITAR */}
+      {/* MODAL DETALLE / EDITAR */}
       <Modal isOpen={isDetailOpen} onDismiss={() => setIsDetailOpen(false)} containerClassName={styles.modalContainer}>
         <div className={styles.modalContent}>
           <div className={styles.modalHeader}>
@@ -342,20 +361,17 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
               <>
                 <TextField label="Nombre de la Obra" value={editNombre} onChange={(_, v) => setEditNombre(v || "")} />
                 <Dropdown label="Cliente" options={clientesOptions} selectedKey={editClienteId} onChange={(_, opt) => setEditClienteId(opt?.key as number)} />
-                <TextField label="Ubicación" value={editUbicacion} onChange={(_, v) => setEditUbicacion(v || "")} />
-
-                {editUbicacion && editUbicacion.length > 3 && (
-                  <div style={{ width: '100%', height: '180px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e1dfdd', marginTop: -10 }}>
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      frameBorder="0"
-                      scrolling="no"
-                      src={`https://maps.google.com/maps?q=${encodeURIComponent(editUbicacion)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
-                    ></iframe>
-                  </div>
-                )}
-
+                <TextField label="Ubicación" value={editUbicacion} onChange={(_, v) => {
+                    setEditUbicacion(v || "");
+                    buscarDireccion(v || "", true);
+                }} />
+                <div style={{ width: '100%', height: '200px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e1dfdd' }}>
+                    <MapContainer center={editCoords} zoom={15} style={{ height: '100%', width: '100%' }}>
+                        <ChangeView center={editCoords} />
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                        <LocationPicker position={editCoords} setPosition={setEditCoords} setAddress={setEditUbicacion} />
+                    </MapContainer>
+                </div>
                 <Dropdown label="Estado" options={modalEstadoOptions} selectedKey={editEstado} onChange={(_, opt) => setEditEstado(opt?.key as string)} />
                 <TextField label="Jornadas Totales" type="number" value={editJornadas} onChange={(_, v) => setEditJornadas(v || "0")} />
               </>
@@ -363,21 +379,17 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
               <Stack tokens={{ childrenGap: 10 }}>
                 <div style={{ background: "#f8f9fa", padding: "15px", borderRadius: "8px", borderLeft: "4px solid #004d40" }}>
                   <Text variant="large" block style={{ fontWeight: 600 }}>{selectedObra?.Title}</Text>
-                  <Text variant="medium" style={{ color: "#605e5c" }}>{selectedObra?.DireccionObra || "Sin dirección registrada"}</Text>
+                  <Text variant="medium" style={{ color: "#605e5c" }}>{selectedObra?.DireccionObra || "Sin dirección"}</Text>
                 </div>
-
                 {selectedObra?.DireccionObra && (
-                  <div style={{ width: '100%', height: '150px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e1dfdd' }}>
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      frameBorder="0"
-                      scrolling="no"
-                      src={`https://maps.google.com/maps?q=${encodeURIComponent(selectedObra.DireccionObra)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
-                    ></iframe>
-                  </div>
+                    <div style={{ width: '100%', height: '150px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e1dfdd' }}>
+                         <MapContainer center={editCoords} zoom={15} style={{ height: '100%', width: '100%', pointerEvents: 'none' }}>
+                            <ChangeView center={editCoords} />
+                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                            <Marker position={editCoords} />
+                        </MapContainer>
+                    </div>
                 )}
-
                 <Stack horizontal horizontalAlign="space-between">
                   <Text style={{ fontWeight: 600 }}>Estado Actual:</Text>
                   <span className={`${styles.badge} ${selectedObra?.EstadoObra === "En Proceso" ? styles.badgeProcess : ""}`}>
@@ -386,34 +398,23 @@ export const TablaObras: React.FC<ITablaObrasProps> = (props) => {
                 </Stack>
                 <Separator />
                 <Stack tokens={{ childrenGap: 5 }}>
-                  <Text variant="medium" style={{ fontWeight: 600 }}>Información de Seguimiento</Text>
-                  <Text>Cliente: <strong>{(selectedObra as any)?.Cliente?.Title || "Sin cliente"}</strong></Text>
-                  <Text>Jornadas Totales: <strong>{(selectedObra as any)?.JornadasTotales || 0}</strong></Text>
+                    <Text variant="medium" style={{ fontWeight: 600 }}>Información de Seguimiento</Text>
+                    <Text>Cliente: <strong>{(selectedObra as any)?.Cliente?.Title || "Sin cliente"}</strong></Text>
+                    <Text>Jornadas Totales: <strong>{(selectedObra as any)?.JornadasTotales || 0}</strong></Text>
                 </Stack>
                 <Separator />
                 <Stack tokens={{ childrenGap: 5 }}>
                   <Text variant="medium" style={{ fontWeight: 600 }}>Registro Fotográfico</Text>
                   {loadingFotos ? (
-                    <Spinner size={SpinnerSize.small} label="Cargando fotos de la obra..." />
+                    <Spinner size={SpinnerSize.small} label="Cargando fotos..." />
                   ) : fotosObra.length > 0 ? (
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "10px", marginTop: "10px" }}>
-                      {fotosObra.map((foto, index) => (
-                        <div key={index} style={{ border: "1px solid #edebe9", borderRadius: "8px", overflow: "hidden", height: "100px" }}>
-                          <img 
-                            src={foto.UrlFoto?.Url || foto.UrlFoto} 
-                            alt={foto.Title} 
-                            style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer" }} 
-                            onClick={() => window.open(foto.UrlFoto?.Url || foto.UrlFoto, "_blank")}
-                            title={foto.Comentarios || "Foto de obra"}
-                          />
-                        </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "10px" }}>
+                      {fotosObra.map((f, i) => (
+                        <img key={i} src={f.UrlFoto?.Url || f.UrlFoto} style={{ width: "100%", height: "100px", objectFit: "cover", borderRadius: "8px" }} onClick={() => window.open(f.UrlFoto?.Url || f.UrlFoto, "_blank")} />
                       ))}
                     </div>
-                  ) : (
-                    <Text variant="small" style={{ color: "#605e5c" }}>No hay fotos registradas para esta obra todavía.</Text>
-                  )}
+                  ) : <Text variant="small">No hay fotos.</Text>}
                 </Stack>
-
               </Stack>
             )}
           </Stack>
