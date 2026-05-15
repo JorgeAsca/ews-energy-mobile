@@ -24,49 +24,40 @@ export class PhotoService {
       comentarios?: string;
     },
   ): Promise<any> {
-    // Devolvemos 'any' para que VistaFotosObra pueda leer el resultado
     try {
-      // Reemplazamos caracteres no válidos para el nombre de la carpeta
       const nombreCarpeta = nombreProyecto.replace(/[/\\?%*:|"<>]/g, "-");
       const folderPath = `${this._libName}/${nombreCarpeta}`;
 
       // 1. LÓGICA SEGURA DE CARPETAS
-      // Intentamos obtener la carpeta. Si falla (error 404), significa que no existe y la creamos.
       try {
         await this._sp.web.getFolderByServerRelativePath(folderPath)();
       } catch (folderError) {
-        // La carpeta no existe, así que la creamos
         await this._sp.web.folders.addUsingPath(folderPath);
       }
 
-      // Extraemos el nombre original sin la extensión
-const nombreSinExtension = file.name.substring(0, file.name.lastIndexOf('.')) || "foto_camara";
-
-// Forzamos que SIEMPRE termine en .jpg
-const fileName = `${Date.now()}_${metadatos.operarioId}_${nombreSinExtension}.jpg`;
+      const nombreSinExtension = file.name.substring(0, file.name.lastIndexOf('.')) || "foto_camara";
+      const fileName = `${Date.now()}_${metadatos.operarioId}_${nombreSinExtension}.jpg`;
 
       // 2. SUBIDA SEGURA DE ARCHIVOS
-      // Cambiamos addChunked por addUsingPath con Overwrite en true para evitar el error de [object Object]
       const fileResult: any = await this._sp.web
         .getFolderByServerRelativePath(folderPath)
         .files.addUsingPath(fileName, file, { Overwrite: true });
 
+      const serverRelativeUrl = fileResult.data?.ServerRelativeUrl || fileResult.ServerRelativeUrl;
+
       // 3. REGISTRO EN LA LISTA DE METADATOS
       await this._sp.web.lists.getByTitle(this._metadataListName).items.add({
         Title: fileName,
-        // Para campos de Búsqueda/Persona, se usa el NombreInterno + "Id"
         ObraId: metadatos.obraId,
         OperarioId: metadatos.operarioId,
         Comentarios: metadatos.comentarios || "",
-        // IMPORTANTE: Al ser tipo Hipervínculo, espera un objeto, no un texto simple
         UrlFoto: {
-          Url: fileResult.ServerRelativeUrl,
+          Url: serverRelativeUrl, 
           Description: fileName,
         },
         FechaRegistro: new Date().toISOString(),
       });
 
-      // Retornamos el resultado para que el componente obtenga la URL
       return fileResult;
     } catch (error) {
       console.error("Error en PhotoService móvil:", error);
@@ -79,7 +70,7 @@ const fileName = `${Date.now()}_${metadatos.operarioId}_${nombreSinExtension}.jp
       const fotos = await this._sp.web.lists.getByTitle(this._metadataListName).items
         .filter(`ObraId eq ${obraId}`)
         .select("Id", "Title", "UrlFoto", "Comentarios", "FechaRegistro")
-        .orderBy("FechaRegistro", false)(); // false para que salgan las más recientes primero
+        .orderBy("FechaRegistro", false)(); 
       return fotos;
     } catch (error) {
       console.error("Error al obtener fotos de la obra:", error);
@@ -87,4 +78,16 @@ const fileName = `${Date.now()}_${metadatos.operarioId}_${nombreSinExtension}.jp
     }
   }
 
+  public async obtenerImagenComoUrlLocal(serverRelativeUrl: string): Promise<string> {
+    try {
+      if (!serverRelativeUrl) return "";
+      
+      const blob = await this._sp.web.getFileByServerRelativePath(serverRelativeUrl).getBlob();
+      
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error("Error al descargar imagen desde SharePoint:", error);
+      return ""; 
+    }
+  }
 }

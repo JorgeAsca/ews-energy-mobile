@@ -34,7 +34,6 @@ export class PersonalService {
 
     public async getFotosDisponibles(): Promise<{ key: string, text: string, url: string }[]> {
         try {
-            // Corrección: Usamos la sintaxis de v4 para obtener archivos de una carpeta específica
             const files = await this._sp.web.getFolderByServerRelativePath("Fotos_Personal").files();
             
             return files.map((file: any) => ({
@@ -74,5 +73,16 @@ export class PersonalService {
 
     public async eliminarTrabajador(id: number): Promise<void> {
         await this._sp.web.lists.getByTitle(this._listName).items.getById(id).delete();
+    }
+
+    public async obtenerImagenComoUrlLocal(serverRelativeUrl: string): Promise<string> {
+        try {
+            if (!serverRelativeUrl) return "";
+            const blob = await this._sp.web.getFileByServerRelativePath(serverRelativeUrl).getBlob();
+            return URL.createObjectURL(blob);
+        } catch (error) {
+            console.error("Error al descargar foto de perfil:", error);
+            return ""; 
+        }
     }
 }

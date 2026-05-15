@@ -2,6 +2,7 @@ import { SPFI } from "@pnp/sp";
 import "@pnp/sp/webs";
 import "@pnp/sp/lists";
 import "@pnp/sp/items";
+import "@pnp/sp/files"; 
 import { IReporteHistorial } from "../models/IReporteHistorial";
 import { IDiarioEntrada } from "../models/IDiarioEntrada";
 
@@ -43,6 +44,17 @@ export class DailyReportService {
         } catch (error) {
             console.error("Error al obtener fotos:", error);
             return [];
+        }
+    }
+
+    public async obtenerImagenComoUrlLocal(serverRelativeUrl: string): Promise<string> {
+        try {
+            if (!serverRelativeUrl) return "";
+            const blob = await this._sp.web.getFileByServerRelativePath(serverRelativeUrl).getBlob();
+            return URL.createObjectURL(blob);
+        } catch (error) {
+            console.error("Error al descargar foto del reporte:", error);
+            return ""; 
         }
     }
 }
