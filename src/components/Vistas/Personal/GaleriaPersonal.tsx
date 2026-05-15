@@ -35,6 +35,9 @@ export const GaleriaPersonal: React.FC<IGaleriaPersonalProps> = (props) => {
   const [procesando, setProcesando] = React.useState(false);
   const [editandoId, setEditandoId] = React.useState<number | null>(null);
   const [hideDeleteDialog, setHideDeleteDialog] = React.useState(true);
+  
+  // NUEVO: Estado para guardar las URLs de los Blobs locales
+  const [fotosLocales, setFotosLocales] = React.useState<Record<number, string>>({});
 
   const [formulario, setFormulario] = React.useState<Partial<IPersonal>>({
     NombreyApellido: "",
@@ -57,6 +60,19 @@ export const GaleriaPersonal: React.FC<IGaleriaPersonalProps> = (props) => {
 
       setUserRol(rol);
       setPersonal(data);
+
+      // CAMBIO PARA VERCEL: Descargamos las fotos una por una para evitar el bloqueo CORS
+      const urls: Record<number, string> = {};
+      for (const empleado of data) {
+        if (empleado.FotoPerfil) {
+          const blobUrl = await pService.obtenerImagenComoUrlLocal(empleado.FotoPerfil);
+          if (blobUrl) {
+            urls[empleado.Id] = blobUrl;
+          }
+        }
+      }
+      setFotosLocales(urls);
+
     } catch (error) {
       setMensaje({ texto: "Error al cargar la información", tipo: MessageBarType.error });
     } finally {
@@ -160,7 +176,8 @@ export const GaleriaPersonal: React.FC<IGaleriaPersonalProps> = (props) => {
               )}
               <Stack horizontalAlign="center" tokens={{ childrenGap: 8 }}>
                 <Persona
-                  imageUrl={empleado.FotoPerfil}
+                  // CAMBIO PARA VERCEL: Usamos la URL del Blob si existe, sino la original
+                  imageUrl={fotosLocales[empleado.Id] || empleado.FotoPerfil}
                   text={empleado.NombreyApellido}
                   size={PersonaSize.size100}
                   hidePersonaDetails
