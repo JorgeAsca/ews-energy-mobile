@@ -11,7 +11,6 @@ export const msalConfig: Configuration = {
     }
 };
 
-// IMPORTANTE: Scope configurado con tu dominio real
 export const loginRequest = {
     scopes: ["https://proyectosintegrales.sharepoint.com/AllSites.Read"] 
 };
